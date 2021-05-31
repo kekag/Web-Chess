@@ -69,12 +69,148 @@ function populateBoard(c, r, p) {
     board[c][r] = square;
 }
 
-// Draw square color
+function initialize() {
+    for (var c = 0; c < 8; c++) {
+        for (var r = 0; r < 8; r++) {
+            p = setupPiece(c, r);
+            populateBoard(c, r, p);
+        }
+    }
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.stroke();
+    ctx.closePath();
+}
+
+initialize()
+// ctx.save();
+
+function pawnMoves(pawn) {
+    var moves;
+    if (pawn.piece.team == team.WHITE) {
+        
+    } else {
+
+    }
+}
+
+function knightMoves(knight) {
+
+}
+
+function bishopMoves(bishop) {
+
+}
+
+function rookMoves(rook) {
+
+}
+
+function queenMoves(queen) {
+
+}
+
+function kingMoves(king) {
+
+}
+
+var highlight, move;
+var down, drag;
+var pos;
+
+function setPosition(e) {
+    var x = e.clientX - canvas.offsetLeft;
+    var y = e.clientY - canvas.offsetTop;
+    pos = [x, y];
+}
+
+function getSquare(e) {
+    setPosition(e)
+    var x = pos[0];
+    var y = pos[1];
+    if (x >= 0 && x <= 720 && y >= 0 && y <= 720) {
+        var c = Math.floor(x / s);
+        var r = Math.floor(y / s);
+        return board[c][r];
+    }
+    return undefined
+}
+
+function highlightPiece(temp) {
+    if (highlight == temp) return;
+    highlight = temp;
+    if (highlight != undefined && highlight.piece.type != type.BLANK) {
+        console.log(`HIGHLIGHT col: ${highlight.col}, row: ${highlight.row}`);
+    }
+    move = undefined;
+}
+
+function movePiece(temp) {
+    if (highlight == temp || move == temp) return;
+    if (highlight == undefined) {
+        highlight = temp;
+    }
+    move = temp;
+    if (move != undefined && highlight.piece.type != type.BLANK) {
+        console.log(`MOVE col: ${move.col}, row: ${move.row}`);
+    }
+    switch(board[c][r].piece.type) {
+        case type.PAWN:
+            piece = "P";
+            break;
+        case type.KNIGHT:
+            piece = "N";
+            break;
+        case type.BISHOP:
+            piece = "B";
+            break;
+        case type.ROOK:
+            piece = "R";
+            break;
+        case type.QUEEN:
+            piece = "Q";
+            break;
+        case type.KING:
+            piece = "K";
+            break;
+    }
+    // highlight = undefined; // if moved
+}
+
+document.addEventListener("click", e => {
+    down = false;
+    if (highlight == undefined) return;
+    if (drag) { // Dropped from drag
+        drag = false;
+        temp = getSquare(e);
+        movePiece(temp);
+    }
+});
+
+document.addEventListener('mousedown', e => {
+    down = true;
+    temp = getSquare(e);
+   // if (temp != undefined && temp.piece.type != type.BLANK) {
+        highlightPiece(temp);
+   // } else {
+        movePiece(temp);
+   // }
+});
+  
+document.addEventListener('mousemove', e => {
+    if (down) {
+        drag = true;
+        setPosition(e);
+    }
+});
+
+var precedent = false;
+
 function drawSquare(c, r) {
-    var squareColor;
-    var textColor;
-    var light = "#CECECE";
-    var dark = "#4A4A4A";
+    var squareColor, textColor;
+    var light = "#CCCCCC";
+    var dark = "#555555";
     if (c % 2 == 0) {
         r % 2 == 0 ? squareColor = light : squareColor = dark;
     } else {
@@ -100,96 +236,68 @@ function drawSquare(c, r) {
     }
 }
 
-function initialize() {
-    for (var c = 0; c < 8; c++) {
-        for (var r = 0; r < 8; r++) {
-            p = setupPiece(c, r);
-            populateBoard(c, r, p);
-            drawSquare(c, r);
-        }
+function drawPiece(c, r) {
+    if (board[c][r].piece.type == type.BLANK) {
+        return;
     }
-    ctx.beginPath();
-    ctx.rect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.stroke();
-    ctx.closePath();
-}
-
-initialize()
-
-function movePawn(c, r) {
-
-}
-
-function moveKnight(c, r) {
-
-}
-
-function moveBishop(c, r) {
-
-}
-
-function moveRook(c, r) {
-
-}
-
-function moveQueen(c, r) {
-
-}
-
-function moveKing(c, r) {
-
-}
-
-var highlightedPiece;
-var movement;
-
-document.addEventListener("click", e => {
-    var x = e.clientX - canvas.offsetLeft;
-    var y = e.clientY - canvas.offsetTop;
-    var c = Math.floor(x / s);
-    var r = Math.floor(y / s);
-    console.log(`col: ${c}, row: ${r}`);
-    highlightedPiece = board[c][r];
-});
-
-function drawPieces() {
-    for (var c = 0; c < 8; c++) {
-        for (var r = 0; r < 8; r++) {
-            if (board[c][r].piece.type == type.BLANK) {
-                continue;
-            }
-            var color, piece;
-
-            board[c][r].piece.team == team.WHITE ? color = "w" : color = "b";
-            switch(board[c][r].piece.type) {
-                case type.PAWN:
-                    piece = "P";
-                    break;
-                case type.KNIGHT:
-                    piece = "N";
-                    break;
-                case type.BISHOP:
-                    piece = "B";
-                    break;
-                case type.ROOK:
-                    piece = "R";
-                    break;
-                case type.QUEEN:
-                    piece = "Q";
-                    break;
-                case type.KING:
-                    piece = "K";
-                    break;
-            }
-            var img = new Image(s, s);
-            img.src = `sprites/${color}${piece}.svg`
-            ctx.drawImage(img, c*s, r*s, s, s);
-        }
+    var color, piece;
+    var x, y;
+    board[c][r].piece.team == team.WHITE ? color = "w" : color = "b";
+    switch(board[c][r].piece.type) {
+        case type.PAWN:
+            piece = "P";
+            break;
+        case type.KNIGHT:
+            piece = "N";
+            break;
+        case type.BISHOP:
+            piece = "B";
+            break;
+        case type.ROOK:
+            piece = "R";
+            break;
+        case type.QUEEN:
+            piece = "Q";
+            break;
+        case type.KING:
+            piece = "K";
+            break;
     }
+    var img = new Image(s, s);
+    img.src = `sprites/${color}${piece}.svg`
+    if (board[c][r] == highlight) {
+        if (drag) {
+            precedent = true;
+            x = pos[0] - s/2;
+            y = pos[1] - s/2;
+        } else {
+            x = c*s;
+            y = r*s;
+        }
+    } else if (board[c][r] != highlight) {
+        x = c*s;
+        y = r*s;
+    }
+    // } else if (!precedent) {
+    //     return;
+    // } 
+    ctx.drawImage(img, x, y, s, s);
 }
 
 function display() {
-    drawPieces()
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.restore();
+
+    for (var c = 0; c < 8; c++) {
+        for (var r = 0; r < 8; r++) {
+            drawSquare(c, r);
+        }
+    }
+    for (var c = 0; c < 8; c++) {
+        for (var r = 0; r < 8; r++) {
+            drawPiece(c, r);
+        }
+    }
+
 }
 setInterval(display, 5)
