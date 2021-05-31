@@ -1,0 +1,11 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+    padding-top: 25px;
+}
+
+canvas { 
+    display: block;
+    margin: auto;
+    border: 1px solid rgba(255, 255, 255, 0.66);
+    border-radius: 1px;
+} 
