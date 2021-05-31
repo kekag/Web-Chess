@@ -1,6 +1,8 @@
 var canvas = document.getElementById("boardCanvas");
 var ctx = canvas.getContext("2d");
 
+var s = canvas.width / 8;
+
 // Define piece enums
 const type = {
     PAWN:   "pawn",
@@ -81,20 +83,20 @@ function drawSquare(c, r) {
     squareColor == light ? textColor = dark : textColor = light;
 
     ctx.beginPath();
-    ctx.rect(c*90, r*90, 90, 90);
+    ctx.rect(c*s, r*s, s, s);
     ctx.fillStyle = squareColor;
     ctx.fill();
     ctx.closePath();
 
     if (r == 7) {
-        ctx.font = "15px sans-serif";
+        ctx.font = `${s/6}px sans-serif`;
         ctx.strokeStyle = textColor;
-        ctx.strokeText(board[c][r].col.toUpperCase(), c*90 + 76, r*90 + 86);
+        ctx.strokeText(board[c][r].col.toUpperCase(), c*s + s - s/6, r*s + 86);
     }
     if (c == 0) {
-        ctx.font = "15px sans-serif";
+        ctx.font = `${s/6}px sans-serif`;
         ctx.strokeStyle = textColor;
-        ctx.strokeText(board[c][r].row, c*90 + 4, r*90 + 15);
+        ctx.strokeText(board[c][r].row, c*s + 4, r*s + s/6);
     }
 }
 
@@ -107,7 +109,7 @@ function initialize() {
         }
     }
     ctx.beginPath();
-    ctx.rect(0, 0, 720, 720);
+    ctx.rect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
     ctx.stroke();
     ctx.closePath();
@@ -145,8 +147,8 @@ var movement;
 document.addEventListener("click", e => {
     var x = e.clientX - canvas.offsetLeft;
     var y = e.clientY - canvas.offsetTop;
-    var c = Math.floor(x / 90);
-    var r = Math.floor(y / 90);
+    var c = Math.floor(x / s);
+    var r = Math.floor(y / s);
     console.log(`col: ${c}, row: ${r}`);
     highlightedPiece = board[c][r];
 });
@@ -157,7 +159,6 @@ function drawPieces() {
             if (board[c][r].piece.type == type.BLANK) {
                 continue;
             }
-            var img = new Image(90, 90);
             var color, piece;
 
             board[c][r].piece.team == team.WHITE ? color = "w" : color = "b";
@@ -181,8 +182,9 @@ function drawPieces() {
                     piece = "K";
                     break;
             }
+            var img = new Image(s, s);
             img.src = `sprites/${color}${piece}.svg`
-            ctx.drawImage(img, c*90 , r*90, 90, 90)
+            ctx.drawImage(img, c*s, r*s, s, s);
         }
     }
 }
