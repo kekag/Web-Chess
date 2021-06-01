@@ -25,6 +25,12 @@ for (var i = 0; i < board.length; i++) {
     board[i] = new Array(8);
 }
 
+function getCR(temp) {
+    var c = temp.col.charCodeAt(0) - 97;
+    var r = -temp.row + 8;
+    return [c, r]
+}
+
 // Determine starting position for specific [c][r] square
 function setupPiece(c, r) {
     var p, t;
@@ -84,12 +90,18 @@ function initialize() {
 }
 
 initialize()
-// ctx.save();
 
 function pawnMoves(pawn) {
-    var moves;
+    var possible;
+    var c, r;
     if (pawn.piece.team == team.WHITE) {
-        
+        CR = getCR(pawn);
+        c = CR[0];
+        r = CR[1];
+        if (board[c][r-1].piece.type == type.BLANK) {
+            possible.push(board[c][r-1]);
+        }
+
     } else {
 
     }
@@ -155,7 +167,7 @@ function movePiece(temp) {
     if (move != undefined && highlight.piece.type != type.BLANK) {
         console.log(`MOVE col: ${move.col}, row: ${move.row}`);
     }
-    switch(board[c][r].piece.type) {
+    switch(highlight.piece.type) {
         case type.PAWN:
             piece = "P";
             break;
@@ -175,7 +187,6 @@ function movePiece(temp) {
             piece = "K";
             break;
     }
-    // highlight = undefined; // if moved
 }
 
 document.addEventListener("click", e => {
@@ -191,11 +202,8 @@ document.addEventListener("click", e => {
 document.addEventListener('mousedown', e => {
     down = true;
     temp = getSquare(e);
-   // if (temp != undefined && temp.piece.type != type.BLANK) {
-        highlightPiece(temp);
-   // } else {
-        movePiece(temp);
-   // }
+    highlightPiece(temp);
+    movePiece(temp);
 });
   
 document.addEventListener('mousemove', e => {
@@ -204,8 +212,6 @@ document.addEventListener('mousemove', e => {
         setPosition(e);
     }
 });
-
-var precedent = false;
 
 function drawSquare(c, r) {
     var squareColor, textColor;
@@ -267,7 +273,6 @@ function drawPiece(c, r) {
     img.src = `sprites/${color}${piece}.svg`
     if (board[c][r] == highlight) {
         if (drag) {
-            precedent = true;
             x = pos[0] - s/2;
             y = pos[1] - s/2;
         } else {
@@ -278,23 +283,27 @@ function drawPiece(c, r) {
         x = c*s;
         y = r*s;
     }
-    // } else if (!precedent) {
-    //     return;
-    // } 
     ctx.drawImage(img, x, y, s, s);
 }
 
 function display() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.restore();
 
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
             drawSquare(c, r);
         }
     }
+    var precedent = false;
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
+            if (highlight != undefined && !precedent) {
+                if (highlight.piece.type != type.BLANK) {
+                    precedent = true;
+                    var CR = getCR(highlight);
+                    drawPiece(CR[0], CR[1]);
+                }
+            }
             drawPiece(c, r);
         }
     }
