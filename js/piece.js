@@ -1,8 +1,15 @@
 /* PIECE MOVEMENT FUNCTIONS ASSUME THE PIECES ARE NOT PINNED */
 
 function pawnMoves(pawn) {
-    var possible, d, c, r;
-    pawn.piece.team == team.WHITE ? d = -1 : d = 1;
+    const possible = new Array();
+    var start, d, c, r;
+    if (pawn.piece.team == team.WHITE) {
+        d = -1;
+        start = 2;
+    } else {
+        d = 1;
+        start = 7;
+    }
     CR = getCR(pawn);
     c = CR[0]; r = CR[1];
 
@@ -13,9 +20,12 @@ function pawnMoves(pawn) {
         if (t >= 0 && t < 8) { // in board boundaries
             if (c == t && board[t][s].piece.type == type.BLANK) { // opposite tile
                 possible.push([t, s]);
+                if (c == t && board[t][s+d].piece.type == type.BLANK && pawn.row == start) {
+                    possible.push([t, s+d]);
+                }
             } else if (c != t && board[t][s].piece.type != type.BLANK) { // diagonal tile(s)
                 possible.push([t, s]);
-            }
+            } 
         }
     }
 
@@ -23,7 +33,8 @@ function pawnMoves(pawn) {
 }
 
 function knightMoves(knight) {
-    var possible, c, r;
+    const possible = new Array();
+    var c, r;
     CR = getCR(knight);
     c = CR[0]; r = CR[1];
     
@@ -42,13 +53,14 @@ function knightMoves(knight) {
 }
 
 function bishopMoves(bishop) {
-    var possible, c, r;
+    const possible = new Array();
+    var c, r;
     CR = getCR(bishop);
     c = CR[0]; r = CR[1];
 
-    for (var i = -1; i >= -c; i--) { // UPLEFT
-        var t = c+i;
-        var s = r+i;
+    for (var i = 1; i <= c; i++) { // UPLEFT
+        var t = c-i;
+        var s = r-i;
         if (t < 0 || s < 0) break;
         if (board[t][s].piece.type == type.BLANK) {
             possible.push([t, s]);
@@ -59,8 +71,8 @@ function bishopMoves(bishop) {
             break;
         }
     }
-    for (var i = 1; i < 8-c; i++) { // DOWNLEFT
-        var t = c+i;
+    for (var i = 1; i <= c; i++) { // DOWNLEFT
+        var t = c-i;
         var s = r+i;
         if (t < 0 || s >= 8) break;
         if (board[t][s].piece.type == type.BLANK) {
@@ -72,7 +84,7 @@ function bishopMoves(bishop) {
             break;
         }
     }
-    for (var j = -1; j >= -r; j--) { // DOWNRIGHT
+    for (var i = 1; i <= 8-c; i++) { // DOWNRIGHT
         var t = c+i;
         var s = r+i;
         if (t >= 8 || s >= 8) break;
@@ -85,9 +97,9 @@ function bishopMoves(bishop) {
             break;
         }
     }
-    for (var j = 1; j < 8-r; j++) { // UPRIGHT
+    for (i = 1; i <= 8-c; i++) { // UPRIGHT
         var t = c+i;
-        var s = r+i;
+        var s = r-i;
         if (t >= 8 || s < 0) break;
         if (board[t][s].piece.type == type.BLANK) {
             possible.push([t, s]);
@@ -103,7 +115,8 @@ function bishopMoves(bishop) {
 }
 
 function rookMoves(rook) {
-    var possible, c, r;
+    const possible = new Array();
+    var c, r;
     CR = getCR(rook);
     c = CR[0]; r = CR[1];
 
@@ -132,7 +145,7 @@ function rookMoves(rook) {
     for (var j = -1; j >= -r; j--) { // UP
         var s = r+j;
         if (board[c][s].piece.type == type.BLANK) {
-            possible.push([t, r]);
+            possible.push([c, s]);
         } else if (board[c][s].piece.team != rook.piece.team) {
             possible.push([c, s]);
             break;
@@ -163,7 +176,8 @@ function queenMoves(queen) {
 
 // Assumes pieces aren't protected
 function kingMoves(king) {
-    var possible, c, r;
+    const possible = new Array();
+    var c, r;
     CR = getCR(king);
     c = CR[0]; r = CR[1];
     

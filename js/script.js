@@ -1,96 +1,6 @@
-var canvas = document.getElementById("boardCanvas");
-var ctx = canvas.getContext("2d");
-
-var s = canvas.width / 8;
-
-// Define piece enums
-const type = {
-    PAWN:   "pawn",
-    KNIGHT: "knight",
-    BISHOP: "bishop",
-    ROOK:   "rook",
-    QUEEN:  "queen",
-    KING:   "king",
-    BLANK:  "blank",
-}
-
-const team = {
-    WHITE: "white",
-    BLACK: "black",
-}
-
-// Create board as 2D-arrary
-var board = new Array(8);
-for (var i = 0; i < board.length; i++) {
-    board[i] = new Array(8);
-}
-
-function getCR(temp) {
-    var c = temp.col.charCodeAt(0) - 97;
-    var r = -temp.row + 8;
-    return [c, r]
-}
-
-// Determine starting position for specific [c][r] square
-function setupPiece(c, r) {
-    var p, t;
-    if (r == 1 || r == 6) { // Minor pieces (second rank)
-        p = type.PAWN;
-    } else if (r == 0 || r == 7) { // Major pieces (first rank)
-        if (c == 0 || c == 7) {
-            p = type.ROOK;
-        } else if (c == 1 || c == 6) {
-            p = type.KNIGHT;
-        } else if (c == 2 || c == 5) {
-            p = type.BISHOP;
-        } else if (c == 3) {
-            p = type.QUEEN;
-        } else {
-            p = type.KING;
-        }
-    } else {
-        var empty = {
-            type: type.BLANK,
-        } 
-        return  empty
-    }
-    r >= 4 ? t = team.WHITE : t = team.BLACK;
-    var piece = {
-        type: p,
-        team: t, 
-    }
-    return piece
-}
-
-// Create and set square object
-function populateBoard(c, r, p) {
-    // column first, row second e.g.
-    // board[0][0] -> a8
-    // board[7][7] -> h1
-    var square = {
-        col:   String.fromCharCode(97 + c),
-        row:   -(r - 8),
-        piece: p,
-    }
-    board[c][r] = square;
-}
-
-// INITIALIZE PIECES AND BOARD
-for (var c = 0; c < 8; c++) {
-    for (var r = 0; r < 8; r++) {
-        p = setupPiece(c, r);
-        populateBoard(c, r, p);
-    }
-}
-ctx.beginPath();
-ctx.rect(0, 0, canvas.width, canvas.height);
-ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-ctx.stroke();
-ctx.closePath();
-
-
-var highlight, move;
+var active, move;
 var down, drag;
+var possible;
 var pos;
 
 function setPosition(e) {
@@ -111,60 +21,46 @@ function getSquare(e) {
     return undefined
 }
 
-function highlightPiece(temp) {
-    if (highlight == temp) return;
-    highlight = temp;
-    if (highlight != undefined && highlight.piece.type != type.BLANK) {
-        console.log(`HIGHLIGHT col: ${highlight.col}, row: ${highlight.row}`);
+function activatePiece(temp) {
+    if (active == temp) return;
+    active = temp;
+    if (active != undefined && active.piece.type != type.BLANK) {
+        console.log(`ACTIVATE col: ${active.col}, row: ${active.row}`);
     }
     move = undefined;
 }
 
 function movePiece(temp) {
-    if (highlight == temp || move == temp) return;
-    if (highlight == undefined) {
-        highlight = temp;
+    if (active == temp || move == temp) return;
+    if (active == undefined) {
+        active = temp;
     }
     move = temp;
-    if (move != undefined && highlight.piece.type != type.BLANK) {
+    // if (move != undefined && active.piece.type != type.BLANK) {
         console.log(`MOVE col: ${move.col}, row: ${move.row}`);
-    }
-    switch(highlight.piece.type) {
-        case type.PAWN:
-            piece = "P";
-            break;
-        case type.KNIGHT:
-            piece = "N";
-            break;
-        case type.BISHOP:
-            piece = "B";
-            break;
-        case type.ROOK:
-            piece = "R";
-            break;
-        case type.QUEEN:
-            piece = "Q";
-            break;
-        case type.KING:
-            piece = "K";
-            break;
-    }
+    // }
+    var ACR = getCR(active);
+    var MCR = getCR(move); 
+    board[MCR[0]][MCR[1]].piece = active.piece;
+    board[ACR[0]][ACR[1]].piece.clear();
 }
 
 document.addEventListener("click", e => {
     down = false;
-    if (highlight == undefined) return;
+    if (active == undefined) return;
     if (drag) { // Dropped from drag
         drag = false;
         temp = getSquare(e);
         movePiece(temp);
+    } else { // Clicking after piece is highlighted
+
     }
 });
 
 document.addEventListener('mousedown', e => {
     down = true;
     temp = getSquare(e);
-    highlightPiece(temp);
+    activatePiece(temp);
     movePiece(temp);
 });
   
@@ -175,12 +71,13 @@ document.addEventListener('mousemove', e => {
     }
 });
 
-function drawSquare(c, r) {
+function drawSquare(c, r, highlight) {
     var squareColor, textColor;
-    var light = "#CCCCCC";
-    var dark = "#5A5A5A";
+    var dark, light, fade;
+    var light = "#C8C8C8"; var dark = "#525252";
+    
     if (c % 2 == 0) {
-        r % 2 == 0 ? squareColor = light : squareColor = dark;
+        r % 2 == 0 ? squareColor = light :  squareColor = dark;
     } else {
         r % 2 == 0 ? squareColor = dark : squareColor = light;
     }
@@ -191,6 +88,23 @@ function drawSquare(c, r) {
     ctx.fillStyle = squareColor;
     ctx.fill();
     ctx.closePath();
+
+    if (highlight > 0) {
+        var alpha = 0.7;
+        for (var i = 0; i < s/2; i++) {
+            if (i < 2) {
+                fade = `rgba(18, 246, 146, 1.0)`;
+            } else {
+                fade = `rgba(18, 246, 146, ${alpha})`;
+            }
+            ctx.beginPath();
+            ctx.rect(c*s+i, r*s+i, s-i*2, s-i*2);
+            ctx.strokeStyle = fade;
+            ctx.stroke();
+            ctx.closePath();
+            alpha -= highlight;
+        }
+    }
 
     if (r == 7) {
         ctx.font = `${s/6}px sans-serif`;
@@ -211,29 +125,11 @@ function drawPiece(c, r) {
     var color, piece;
     var x, y;
     board[c][r].piece.team == team.WHITE ? color = "w" : color = "b";
-    switch(board[c][r].piece.type) {
-        case type.PAWN:
-            piece = "P";
-            break;
-        case type.KNIGHT:
-            piece = "N";
-            break;
-        case type.BISHOP:
-            piece = "B";
-            break;
-        case type.ROOK:
-            piece = "R";
-            break;
-        case type.QUEEN:
-            piece = "Q";
-            break;
-        case type.KING:
-            piece = "K";
-            break;
-    }
+    piece = board[c][r].piece.letter;
+
     var img = new Image(s, s);
     img.src = `sprites/${color}${piece}.svg`
-    if (board[c][r] == highlight) {
+    if (board[c][r] == active) {
         if (drag) {
             x = pos[0] - s/2;
             y = pos[1] - s/2;
@@ -241,7 +137,7 @@ function drawPiece(c, r) {
             x = c*s;
             y = r*s;
         }
-    } else if (board[c][r] != highlight) {
+    } else if (board[c][r] != active) {
         x = c*s;
         y = r*s;
     }
@@ -250,19 +146,54 @@ function drawPiece(c, r) {
 
 function display() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    
+    var highlight = false;
+    if (active != undefined && active.piece.type != type.BLANK) {
+        switch(active.piece.type) {
+            case type.PAWN:
+                possible = pawnMoves(active);
+                break;
+            case type.KNIGHT:
+                possible = knightMoves(active);
+                break;
+            case type.BISHOP:
+                possible = bishopMoves(active);
+                break;
+            case type.ROOK:
+                possible = rookMoves(active);
+                break;
+            case type.QUEEN:
+                possible = queenMoves(active);
+                break;
+            case type.KING:
+                possible = kingMoves(active);
+                break;
+        }
+        highlight = true;
+    }
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
-            drawSquare(c, r);
+            drawSquare(c, r, 0);
+            if (highlight) {
+                var CR = getCR(active);
+                if (CR[0] == c && CR[1] == r) {
+                    drawSquare(c, r, 0.1);
+                }
+                for (const p of possible) {
+                    if (p[0] == c && p[1] == r) {
+                        drawSquare(c, r, 0.015);
+                    }
+                }
+            }
         }
     }
     var precedent = false;
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
-            if (highlight != undefined && !precedent) {
-                if (highlight.piece.type != type.BLANK) {
+            if (active != undefined && !precedent) {
+                if (active.piece.type != type.BLANK) {
                     precedent = true;
-                    var CR = getCR(highlight);
+                    var CR = getCR(active);
                     drawPiece(CR[0], CR[1]);
                 }
             }
