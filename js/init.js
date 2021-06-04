@@ -1,23 +1,24 @@
 var canvas = document.getElementById("boardCanvas");
 var ctx = canvas.getContext("2d");
 
-var s = canvas.width / 8;
-
 // Define piece enums
 const type = {
-    PAWN:   "pawn",
-    KNIGHT: "knight",
-    BISHOP: "bishop",
-    ROOK:   "rook",
-    QUEEN:  "queen",
-    KING:   "king",
-    BLANK:  "blank",
+    PAWN:   "P",
+    KNIGHT: "N",
+    BISHOP: "B",
+    ROOK:   "R",
+    QUEEN:  "Q",
+    KING:   "K",
+    BLANK:  "",
 }
 
 const team = {
-    WHITE: "white",
-    BLACK: "black",
+    WHITE: "w",
+    BLACK: "b",
 }
+
+var s = canvas.width / 8;
+var turn = team.WHITE;
 
 // Create board as 2D-arrary
 const board = new Array(8);
@@ -33,42 +34,35 @@ function getCR(temp) {
 
 // Determine starting position for specific [c][r] square
 function setupPiece(c, r) {
-    var p, t, l;
+    var p, t;
     if (r == 1 || r == 6) { // Minor pieces (second rank)
         p = type.PAWN;
-        l = "P";
     } else if (r == 0 || r == 7) { // Major pieces (first rank)
         if (c == 0 || c == 7) {
             p = type.ROOK;
-            l = "R";
         } else if (c == 1 || c == 6) {
             p = type.KNIGHT;
-            l = "N";
         } else if (c == 2 || c == 5) {
             p = type.BISHOP;
-            l = "B";
         } else if (c == 3) {
             p = type.QUEEN;
-            l = "Q";
-        } else {
+        } else { // c == 4
             p = type.KING;
-            l = "K";
         }
     } else {
-        var empty = {
-            type: type.BLANK,
-        } 
-        return empty;
+        p = type.BLANK;
     }
-    r >= 4 ? t = team.WHITE : t = team.BLACK;
+    if (r > 5) {
+        t = team.WHITE;
+    } else if (r < 2) {
+        t = team.BLACK;
+    }
     var piece = {
         type: p,
         team: t,
-        letter: l,
         clear: function() {
             this.type = type.BLANK;
             this.team = undefined;
-            this.letter = "";
         }
     };
     return piece;
@@ -96,6 +90,6 @@ for (var c = 0; c < 8; c++) {
 }
 ctx.beginPath();
 ctx.rect(0, 0, canvas.width, canvas.height);
-ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+ctx.strokeStyle = "rgba(255, 255, 255, 0.53595)";
 ctx.stroke();
 ctx.closePath();

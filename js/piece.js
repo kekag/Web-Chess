@@ -23,7 +23,7 @@ function pawnMoves(pawn) {
                 if (c == t && board[t][s+d].piece.type == type.BLANK && pawn.row == start) {
                     possible.push([t, s+d]);
                 }
-            } else if (c != t && board[t][s].piece.type != type.BLANK) { // diagonal tile(s)
+            } else if (c != t && board[t][s].piece.type != type.BLANK && board[t][s].piece.team != pawn.piece.team) { // diagonal tile(s)
                 possible.push([t, s]);
             } 
         }
