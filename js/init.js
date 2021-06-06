@@ -34,12 +34,14 @@ function getCR(temp) {
 
 // Determine starting position for specific [c][r] square
 function setupPiece(c, r) {
-    var p, t;
+    var p, t, c;
     if (r == 1 || r == 6) { // Minor pieces (second rank)
         p = type.PAWN;
+        c = false; // iff moved to 4th rank in one move make true, en passant applies
     } else if (r == 0 || r == 7) { // Major pieces (first rank)
         if (c == 0 || c == 7) {
             p = type.ROOK;
+            c = true; // if moved make false, castling no longer possible for either queen/king side
         } else if (c == 1 || c == 6) {
             p = type.KNIGHT;
         } else if (c == 2 || c == 5) {
@@ -48,6 +50,7 @@ function setupPiece(c, r) {
             p = type.QUEEN;
         } else { // c == 4
             p = type.KING;
+            c = true; // if moved make false, castling no longer possible for either side
         }
     } else {
         p = type.BLANK;
@@ -60,6 +63,7 @@ function setupPiece(c, r) {
     var piece = {
         type: p,
         team: t,
+        case: undefined, 
         clear: function() {
             this.type = type.BLANK;
             this.team = undefined;
@@ -88,6 +92,8 @@ for (var c = 0; c < 8; c++) {
         populateBoard(c, r, p);
     }
 }
+
+// Draw border around board
 ctx.beginPath();
 ctx.rect(0, 0, canvas.width, canvas.height);
 ctx.strokeStyle = "rgba(255, 255, 255, 0.53595)";

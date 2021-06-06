@@ -1,7 +1,5 @@
-var active, move;
-var down, drag;
-var possible;
-var pos;
+var active, possible;
+var down, drag, pos;
 
 function setPosition(e) {
     var x = e.clientX - canvas.offsetLeft;
@@ -19,15 +17,6 @@ function getSquare(e) {
         return board[c][r];
     }
     return undefined
-}
-
-function copyPiece(c, r) {
-    var tp = active.piece.type;
-    var tm = active.piece.team;
-    board[c][r].piece.type = tp;
-    board[c][r].piece.team = tm;
-    console.log(`${tm}${tp} ${active.col}${active.row}→${board[c][r].col}${board[c][r].row}`);
-    active.piece.clear();
 }
 
 function activatePiece(temp) {
@@ -65,14 +54,56 @@ function activatePiece(temp) {
     }
 }
 
-function movePiece(temp) {    
-    if (temp != undefined && active != temp) { 
-        var CR = getCR(temp);
+function movePiece(move) {    
+    if (move != undefined && active != move) { 
+        var MCR = getCR(move);
+        var ACR = getCR(active);
         for (const p of possible) {
-            if (p[0] == CR[0] && p[1] == CR[1]) {
+            if (p[0] == MCR[0] && p[1] == MCR[1]) {
                 drag = false;
-                move = temp;
-                copyPiece(CR[0], CR[1]);
+
+                // Handle special cases
+                if (active.piece.case != undefined) {
+                    switch(active.piece.type) {
+                        case type.PAWN:
+                            var d, l, r; // direction, left condition and right condition
+                            turn == team.WHITE ? d = -2 : d = 2;
+                            l = r = false;
+                            if (ACR[0]-1 >= 0) {
+                                l = board[ACR[0]-1][MCR[1]].piece.type == type.PAWN;
+                                console.log(l);
+                            }
+                            if (ACR[0]+1 < 8) {
+                                r = board[ACR[0]+1][MCR[1]].piece.type == type.PAWN;
+                                console.log(r);
+                            }
+                            if (MCR[1]-ACR[1] == d && (l || r)) {
+                                console.log("TRUEE");
+                                active.piece.case = true;
+                            } else { // turn back false in case the condition was met before but no longer does
+                                active.piece.case = false;
+                            }
+                            break;
+                        case type.ROOK:
+                            active.piece.case = false;
+                            break;
+                        case type.KING:
+                            active.piece.case = false;
+                            break;
+                    }
+                }
+
+                // Copy active piece to new square then clear
+                var tp = active.piece.type;
+                var tm = active.piece.team;
+                var tc = active.piece.case;
+                board[MCR[0]][MCR[1]].piece.type = tp;
+                board[MCR[0]][MCR[1]].piece.team = tm;
+                board[MCR[0]][MCR[1]].piece.case = tc;
+                console.log(`${tm}${tp} ${active.col}${active.row}→${board[MCR[0]][MCR[1]].col}${board[MCR[0]][MCR[1]].row}`);
+                active.piece.clear();
+
+
                 turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;
                 break;
             }
