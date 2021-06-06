@@ -55,33 +55,29 @@ function activatePiece(temp) {
 }
 
 function movePiece(move) {    
-    if (move != undefined && active != move) { 
+    if (move != undefined && possible != undefined && active != move) { 
         var MCR = getCR(move);
         var ACR = getCR(active);
         for (const p of possible) {
             if (p[0] == MCR[0] && p[1] == MCR[1]) {
                 drag = false;
 
-                // Handle special cases
+                // Update case status and handle special cases
                 if (active.piece.case != undefined) {
                     switch(active.piece.type) {
                         case type.PAWN:
                             var d, l, r; // direction, left condition and right condition
-                            turn == team.WHITE ? d = -2 : d = 2;
+                            turn == team.WHITE ? d = -1 : d = 1;
                             l = r = false;
-                            if (ACR[0]-1 >= 0) {
-                                l = board[ACR[0]-1][MCR[1]].piece.type == type.PAWN;
-                                console.log(l);
-                            }
-                            if (ACR[0]+1 < 8) {
-                                r = board[ACR[0]+1][MCR[1]].piece.type == type.PAWN;
-                                console.log(r);
-                            }
-                            if (MCR[1]-ACR[1] == d && (l || r)) {
-                                console.log("TRUEE");
+                            if (ACR[0]-1 >= 0) l = board[ACR[0]-1][MCR[1]].piece.type == type.PAWN;
+                            if (ACR[0]+1 < 8) r = board[ACR[0]+1][MCR[1]].piece.type == type.PAWN;
+                            if (MCR[1]-ACR[1] == (d*2) && (l || r)) {
                                 active.piece.case = true;
                             } else { // turn back false in case the condition was met before but no longer does
                                 active.piece.case = false;
+                            }
+                            if (board[MCR[0]][MCR[1]].piece.type == type.BLANK && ACR[0] != MCR[0]) { // en passant capture
+                                board[MCR[0]][MCR[1]-d].piece.clear();
                             }
                             break;
                         case type.ROOK:
@@ -102,7 +98,7 @@ function movePiece(move) {
                 board[MCR[0]][MCR[1]].piece.case = tc;
                 console.log(`${tm}${tp} ${active.col}${active.row}→${board[MCR[0]][MCR[1]].col}${board[MCR[0]][MCR[1]].row}`);
                 active.piece.clear();
-
+                
 
                 turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;
                 break;

@@ -27,9 +27,11 @@ for (var i = 0; i < board.length; i++) {
 }
 
 function getCR(temp) {
-    var c = temp.col.charCodeAt(0) - 97;
-    var r = -temp.row + 8;
-    return [c, r]
+    if (temp != undefined) {
+        var c = temp.col.charCodeAt(0) - 97;
+        var r = -temp.row + 8;
+        return [c, r]
+    }
 }
 
 // Determine starting position for specific [c][r] square
@@ -63,7 +65,7 @@ function setupPiece(c, r) {
     var piece = {
         type: p,
         team: t,
-        case: undefined, 
+        case: c, 
         clear: function() {
             this.type = type.BLANK;
             this.team = undefined;

@@ -105,4 +105,4 @@ function display() {
 
 }
 
-setInterval(display, 7)
+setInterval(display, 5)
