@@ -2,9 +2,13 @@
 
 Made using basic JS, HTML, and CSS 
 
-### Not yet implemented
+### To be implemented
 
-- Check logic (checks, mates, pins, W/L)
-- Castling
-- Pawn promotion
-- En passant
+- [ ] Check logic (checks, mates, pins, W/L)
+- [ ] Castling
+- [ ] Pawn promotion
+- [x] En passant
+
+---
+
+![Example over-the-board game](Carlsen_v_Tang_Bullet.png)
