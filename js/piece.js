@@ -24,7 +24,7 @@ function pawnMoves(pawn) {
                     possible.push([t, s+d]);
                 }
             } else if (c != t && (board[t][s].piece.type != type.BLANK && board[t][s].piece.team != pawn.piece.team) || // normal diagonal tile(s), including en passant (next line)
-                                 (board[t][s].piece.type == type.BLANK && board[t][r].piece.type == type.PAWN && board[t][r].piece.team != pawn.piece.team && board[t][r].piece.case == true)) { 
+                                 (board[t][s].piece.type == type.BLANK && board[t][r].piece.type == type.PAWN && board[t][r].piece.team != pawn.piece.team && board[t][r].piece.case)) { 
                 possible.push([t, s]);
             } 
         }
@@ -181,7 +181,8 @@ function kingMoves(king) {
     var c, r;
     CR = getCR(king);
     c = CR[0]; r = CR[1];
-    
+
+    // Normal one-tile movements
     for (var i = -1; i <= 1; i++) {
         for (var j = -1; j <= 1; j++) {
             var t = c+i;
@@ -190,6 +191,30 @@ function kingMoves(king) {
             if (t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].piece.team != king.piece.team) {
                 possible.push([t, s]);
             }
+        }
+    }
+
+    // Castling
+    var rank;
+    king.piece.team == team.WHITE ? rank = 7 : rank = 0; 
+    if (king.piece.case && c == 4 && r == rank) {
+        if (board[7][rank].piece.type == type.ROOK && board[7][rank].piece.case) { // King side
+            var gap = true;
+            for (var i = c+1; i < 7; i++) {
+                if (board[i][rank].piece.type != type.BLANK) {
+                    gap = false;
+                }
+            }
+            if (gap) possible.push([7, rank]);
+        }
+        if (board[0][rank].piece.type == type.ROOK && board[0][rank].piece.case) { // King side
+            var gap = true;
+            for (var i = c-1; i > 0; i--) {
+                if (board[i][rank].piece.type != type.BLANK) {
+                    gap = false;
+                }
+            }
+            if (gap) possible.push([0, rank]);
         }
     }
 

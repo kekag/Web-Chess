@@ -83,7 +83,6 @@ function drawPiece(c, r) {
 function display() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
             drawSquare(c, r);

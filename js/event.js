@@ -54,6 +54,20 @@ function activatePiece(temp) {
     }
 }
 
+// Copy active piece to new square then clear
+function copyClear(temp, c, r, log) {
+    var tp = temp.piece.type;
+    var tm = temp.piece.team;
+    var tc = temp.piece.case;
+    board[c][r].piece.type = tp;
+    board[c][r].piece.team = tm;
+    board[c][r].piece.case = tc;
+    temp.piece.clear();
+    if (log) {
+        console.log(`${tm}${tp} ${temp.col}${temp.row}→${board[c][r].col}${board[c][r].row}`);
+    }
+}
+
 function movePiece(move) {    
     if (move != undefined && possible != undefined && active != move) { 
         var MCR = getCR(move);
@@ -61,6 +75,7 @@ function movePiece(move) {
         for (const p of possible) {
             if (p[0] == MCR[0] && p[1] == MCR[1]) {
                 drag = false;
+                var standard = true;
 
                 // Update case status and handle special cases
                 if (active.piece.case != undefined) {
@@ -76,6 +91,7 @@ function movePiece(move) {
                             } else { // turn back false in case the condition was met before but no longer does
                                 active.piece.case = false;
                             }
+
                             if (board[MCR[0]][MCR[1]].piece.type == type.BLANK && ACR[0] != MCR[0]) { // en passant capture
                                 board[MCR[0]][MCR[1]-d].piece.clear();
                             }
@@ -84,22 +100,28 @@ function movePiece(move) {
                             active.piece.case = false;
                             break;
                         case type.KING:
+                            if (active.piece.case) { // castling
+                                var rank;
+                                turn == team.WHITE ? rank = 7 : rank = 0;
+                                if (MCR[0] == 7) { // king side
+                                    copyClear(active, 6, rank, false);
+                                    copyClear(board[7][rank], 5, rank, false);
+                                    console.log(`${turn} O-O`);
+                                    standard = false;
+                                } else if (MCR[0] == 0) { // queen side
+                                    copyClear(active, 2, rank, false);
+                                    copyClear(board[0][rank], 3, rank, false);
+                                    console.log(`${turn} O-O-O`);
+                                    standard = false;
+                                }
+                            }
                             active.piece.case = false;
                             break;
                     }
                 }
-
-                // Copy active piece to new square then clear
-                var tp = active.piece.type;
-                var tm = active.piece.team;
-                var tc = active.piece.case;
-                board[MCR[0]][MCR[1]].piece.type = tp;
-                board[MCR[0]][MCR[1]].piece.team = tm;
-                board[MCR[0]][MCR[1]].piece.case = tc;
-                console.log(`${tm}${tp} ${active.col}${active.row}→${board[MCR[0]][MCR[1]].col}${board[MCR[0]][MCR[1]].row}`);
-                active.piece.clear();
                 
-
+                if (standard) copyClear(active, MCR[0], MCR[1], true);
+                
                 turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;
                 break;
             }

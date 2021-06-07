@@ -2,7 +2,7 @@
 
 Made using basic JS, HTML, and CSS 
 
-### Not yet implemented
+### Implementation check-list
 
 - Check logic (checks, mates, pins, W/L)
 - Castling
