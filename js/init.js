@@ -18,7 +18,16 @@ const team = {
 }
 
 var s = canvas.width / 8;
+
 var turn = team.WHITE;
+var selfRank, oponentRank;
+if (turn == team.WHITE) {
+    selfRank = 7;
+    oponentRank = 0;
+} else { 
+    selfRank = 0;
+    oponentRank = 7;
+}
 
 // Create board as 2D-arrary
 const board = new Array(8);

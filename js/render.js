@@ -88,20 +88,55 @@ function display() {
             drawSquare(c, r);
         }
     }
-    var precedent = false;
+    var ac, ar;
+    if (active != undefined) {
+        var CR = getCR(active);
+        ac = CR[0]; ar = CR[1];
+    } 
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
-            if (active != undefined && !precedent) {
-                if (active.piece.type != type.BLANK) {
-                    precedent = true;
-                    var CR = getCR(active);
-                    drawPiece(CR[0], CR[1]);
+            if (c != ac || r != ar) {
+                if (board[c][r] != promotionSquare) {
+                    drawPiece(c, r);
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(c*s, r*s);
+                    ctx.lineTo(c*s + s, r*s + s);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(c*s + s, r*s);
+                    ctx.lineTo(c*s, r*s + s);
+                    ctx.stroke();
+
+                    var q = new Image(s/2, s/2);
+                    q.src = `sprites/${board[c][r].piece.team}${Q}.svg` 
+                    var qx = c*s + s/4;
+                    var qy = r*s;
+                    ctx.drawImage(q, qx, qy, s/2, s/2);
+
+                    var r = new Image(s/2, s/2);
+                    r.src = `sprites/${board[c][r].piece.team}${R}.svg` 
+                    var rx = c*s + s/4;
+                    var ry = r*s + s/2;
+                    ctx.drawImage(r, rx, ry, s/2, s/2);
+
+                    var b = new Image(s/2, s/2);
+                    b.src = `sprites/${board[c][r].piece.team}${B}.svg` 
+                    var bx = c*s;
+                    var by = r*s + s/4;
+                    ctx.drawImage(b, bx, by, s/2, s/2);
+
+                    var n = new Image(s/2, s/2);
+                    n.src = `sprites/${board[c][r].piece.team}${N}.svg` 
+                    var nx = c*s + s/2;
+                    var ny = r*s + s/4;
+                    ctx.drawImage(n, nx, ny, s/2, s/2);
                 }
             }
-            drawPiece(c, r);
         }
     }
-
+    if (active != undefined) drawPiece(ac, ar);
 }
 
 setInterval(display, 5)

@@ -1,3 +1,5 @@
+var volume = 0.225;
+var promotionSquare;
 var active, possible;
 var down, drag, pos;
 
@@ -17,6 +19,20 @@ function getSquare(e) {
         return board[c][r];
     }
     return undefined
+}
+
+// Copy active piece to new square then clear
+function copyClear(temp, c, r, log) {
+    var tp = temp.piece.type;
+    var tm = temp.piece.team;
+    var tc = temp.piece.case;
+    board[c][r].piece.type = tp;
+    board[c][r].piece.team = tm;
+    board[c][r].piece.case = tc;
+    temp.piece.clear();
+    if (log) {
+        console.log(`${tm}${tp} ${temp.col}${temp.row}→${board[c][r].col}${board[c][r].row}`);
+    }
 }
 
 function activatePiece(temp) {
@@ -54,20 +70,6 @@ function activatePiece(temp) {
     }
 }
 
-// Copy active piece to new square then clear
-function copyClear(temp, c, r, log) {
-    var tp = temp.piece.type;
-    var tm = temp.piece.team;
-    var tc = temp.piece.case;
-    board[c][r].piece.type = tp;
-    board[c][r].piece.team = tm;
-    board[c][r].piece.case = tc;
-    temp.piece.clear();
-    if (log) {
-        console.log(`${tm}${tp} ${temp.col}${temp.row}→${board[c][r].col}${board[c][r].row}`);
-    }
-}
-
 function movePiece(move) {    
     if (move != undefined && possible != undefined && active != move) { 
         var MCR = getCR(move);
@@ -83,6 +85,7 @@ function movePiece(move) {
                         case type.PAWN:
                             var d, l, r; // direction, left condition and right condition
                             turn == team.WHITE ? d = -1 : d = 1;
+                
                             l = r = false;
                             if (ACR[0]-1 >= 0) l = board[ACR[0]-1][MCR[1]].piece.type == type.PAWN;
                             if (ACR[0]+1 < 8) r = board[ACR[0]+1][MCR[1]].piece.type == type.PAWN;
@@ -91,9 +94,11 @@ function movePiece(move) {
                             } else { // turn back false in case the condition was met before but no longer does
                                 active.piece.case = false;
                             }
-
                             if (board[MCR[0]][MCR[1]].piece.type == type.BLANK && ACR[0] != MCR[0]) { // en passant capture
                                 board[MCR[0]][MCR[1]-d].piece.clear();
+                            } else if (MCR[1] == oponentRank) { // pawn promotion
+                                promotionSquare = board[MCR[0]][MCR[1]];
+                                active.piece.clear();
                             }
                             break;
                         case type.ROOK:
@@ -101,16 +106,14 @@ function movePiece(move) {
                             break;
                         case type.KING:
                             if (active.piece.case) { // castling
-                                var rank;
-                                turn == team.WHITE ? rank = 7 : rank = 0;
                                 if (MCR[0] == 7) { // king side
-                                    copyClear(active, 6, rank, false);
-                                    copyClear(board[7][rank], 5, rank, false);
+                                    copyClear(active, 6, selfRank, false);
+                                    copyClear(board[7][selfRank], 5, selfRank, false);
                                     console.log(`${turn} O-O`);
                                     standard = false;
                                 } else if (MCR[0] == 0) { // queen side
-                                    copyClear(active, 2, rank, false);
-                                    copyClear(board[0][rank], 3, rank, false);
+                                    copyClear(active, 2, selfRank, false);
+                                    copyClear(board[0][selfRank], 3, selfRank, false);
                                     console.log(`${turn} O-O-O`);
                                     standard = false;
                                 }
@@ -121,8 +124,11 @@ function movePiece(move) {
                 }
                 
                 if (standard) copyClear(active, MCR[0], MCR[1], true);
-                
-                turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;
+                var audio = new Audio("audio/move.wav");
+                audio.volume = volume;
+                audio.play();
+
+                turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;                
                 break;
             }
         }

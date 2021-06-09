@@ -20,8 +20,10 @@ function pawnMoves(pawn) {
         if (t >= 0 && t < 8) { // in board boundaries
             if (c == t && board[t][s].piece.type == type.BLANK) { // opposite tile
                 possible.push([t, s]);
-                if (c == t && board[t][s+d].piece.type == type.BLANK && pawn.row == start) {
-                    possible.push([t, s+d]);
+                if (s+d < 8) {
+                    if (c == t && board[t][s+d].piece.type == type.BLANK && pawn.row == start) {
+                        possible.push([t, s+d]);
+                    }
                 }
             } else if (c != t && (board[t][s].piece.type != type.BLANK && board[t][s].piece.team != pawn.piece.team) || // normal diagonal tile(s), including en passant (next line)
                                  (board[t][s].piece.type == type.BLANK && board[t][r].piece.type == type.PAWN && board[t][r].piece.team != pawn.piece.team && board[t][r].piece.case)) { 
