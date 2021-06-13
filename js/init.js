@@ -1,5 +1,6 @@
 var canvas = document.getElementById("boardCanvas");
 var ctx = canvas.getContext("2d");
+var s = canvas.width / 8;
 
 // Define piece enums
 const type = {
@@ -11,23 +12,31 @@ const type = {
     KING:   "K",
     BLANK:  "",
 }
+Object.freeze(type);
 
 const team = {
-    WHITE: "w",
-    BLACK: "b",
+    WHITE: {
+        value: "w",
+        rank: new Array(8),
+    }, 
+    BLACK: {
+        value: "b",
+        rank: new Array(8),
+    }, 
 }
 
-var s = canvas.width / 8;
+// Use cols/rows as a map/dictionary
+var cols = {};
+var rows = {}; 
+for(let i = 0; i < 8; i++) {
+    cols[i] = String.fromCharCode(97 + i);
+    rows[i] = -(i - 8);
+    team.WHITE.rank[i] = -(i - 7);
+    team.BLACK.rank[i] = i;
+}
+Object.freeze(team);
 
 var turn = team.WHITE;
-var selfRank, oponentRank;
-if (turn == team.WHITE) {
-    selfRank = 7;
-    oponentRank = 0;
-} else { 
-    selfRank = 0;
-    oponentRank = 7;
-}
 
 // Create board as 2D-arrary
 const board = new Array(8);
@@ -35,72 +44,75 @@ for (var i = 0; i < board.length; i++) {
     board[i] = new Array(8);
 }
 
-function getCR(temp) {
-    if (temp != undefined) {
-        var c = temp.col.charCodeAt(0) - 97;
-        var r = -temp.row + 8;
-        return [c, r]
-    }
-}
-
-// Determine starting position for specific [c][r] square
-function setupPiece(c, r) {
-    var p, t, c;
-    if (r == 1 || r == 6) { // Minor pieces (second rank)
-        p = type.PAWN;
-        c = false; // iff moved to 4th rank in one move make true, en passant applies
-    } else if (r == 0 || r == 7) { // Major pieces (first rank)
-        if (c == 0 || c == 7) {
-            p = type.ROOK;
-            c = true; // if moved make false, castling no longer possible for either queen/king side
-        } else if (c == 1 || c == 6) {
-            p = type.KNIGHT;
-        } else if (c == 2 || c == 5) {
-            p = type.BISHOP;
-        } else if (c == 3) {
-            p = type.QUEEN;
-        } else { // c == 4
-            p = type.KING;
-            c = true; // if moved make false, castling no longer possible for either side
-        }
-    } else {
-        p = type.BLANK;
-    }
-    if (r > 5) {
-        t = team.WHITE;
-    } else if (r < 2) {
-        t = team.BLACK;
-    }
-    var piece = {
-        type: p,
-        team: t,
-        case: c, 
-        clear: function() {
-            this.type = type.BLANK;
-            this.team = undefined;
-        }
-    };
-    return piece;
-}
-
-// Create and set square object
-function populateBoard(c, r, p) {
-    // column first, row second e.g.
-    // board[0][0] -> a8
-    // board[7][7] -> h1
-    var square = {
-        col:   String.fromCharCode(97 + c),
-        row:   -(r - 8),
-        piece: p,
-    }
-    board[c][r] = square;
-}
-
 // INITIALIZE PIECES AND BOARD
+// column first, row second e.g.
+// [0][0] → a8 [7][0] → h8
+// [0][7] → a1 [7][7] → h1
 for (var c = 0; c < 8; c++) {
     for (var r = 0; r < 8; r++) {
-        p = setupPiece(c, r);
-        populateBoard(c, r, p);
+        // Determine starting position for specific [c][r] square
+        var p, t, m, special;
+        if (r > 5) {
+            t = team.WHITE;
+        } else if (r < 2) {
+            t = team.BLACK;
+        }
+        if (r == 1 || r == 6) { // Minor pieces (second rank)
+            p = type.PAWN;
+            special = false; // iff moved to 4th rank in one move make true, en passant applies
+        } else if (r == 0 || r == 7) { // Major pieces (first rank)
+            if (c == 0 || c == 7) {
+                p = type.ROOK;
+                special = true; // if moved make false, castling no longer possible for either queen/king side
+            } else if (c == 1 || c == 6) {
+                p = type.KNIGHT;
+            } else if (c == 2 || c == 5) {
+                p = type.BISHOP;
+            } else if (c == 3) {
+                p = type.QUEEN;
+            } else { // c == 4
+                p = type.KING;
+                special = true; // if moved make false, castling no longer possible for either side
+            }
+        } else {
+            p = type.BLANK;
+        }
+
+        switch(p) {
+            case type.PAWN:
+                m = pawn;
+                break;
+            case type.KNIGHT:
+                m = knight;
+                break;
+            case type.BISHOP:
+                m = bishop;
+                break;
+            case type.ROOK:
+                m = rook;
+                break;
+            case type.QUEEN:
+                m = queen;
+                break;
+            case type.KING:
+                m = king;
+                break;
+        }
+        
+        var piece = {
+            type: p,
+            team: t,
+            col: c,
+            row: r,
+            case: special,
+            moves: m,
+            clear: function() {
+                this.type = type.BLANK;
+                this.team = undefined;
+            }
+        };
+
+        board[c][r] = piece;
     }
 }
 

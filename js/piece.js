@@ -1,224 +1,198 @@
 /* PIECE MOVEMENT FUNCTIONS ASSUME THE PIECES ARE NOT PINNED */
 
-function pawnMoves(pawn) {
+function pawn() {
     const possible = new Array();
-    var start, d, c, r;
-    if (pawn.piece.team == team.WHITE) {
+    var start, d;
+    if (this.team == team.WHITE) {
         d = -1;
-        start = 2;
+        start = 6;
     } else {
         d = 1;
-        start = 7;
+        start = 1;
     }
-    CR = getCR(pawn);
-    c = CR[0]; r = CR[1];
-
     // Assume any possible move can be played then restrict
-    var s = r+d;
+    var s = this.row+d;
     for (var i = -1; i <= 1; i++) {
-        var t = c+i;
+        var t = this.col+i;
         if (t >= 0 && t < 8) { // in board boundaries
-            if (c == t && board[t][s].piece.type == type.BLANK) { // opposite tile
+            if (c == t && board[t][s].type == type.BLANK) { // opposite tile
                 possible.push([t, s]);
-                if (s+d < 8) {
-                    if (c == t && board[t][s+d].piece.type == type.BLANK && pawn.row == start) {
+                if (s+d >= 0 && s+d < 8) {
+                    if (c == t && board[t][s+d].type == type.BLANK && this.row == start) {
                         possible.push([t, s+d]);
                     }
                 }
-            } else if (c != t && (board[t][s].piece.type != type.BLANK && board[t][s].piece.team != pawn.piece.team) || // normal diagonal tile(s), including en passant (next line)
-                                 (board[t][s].piece.type == type.BLANK && board[t][r].piece.type == type.PAWN && board[t][r].piece.team != pawn.piece.team && board[t][r].piece.case)) { 
+            } else if (c != t && (board[t][s].type != type.BLANK && board[t][s].team != this.team) || // normal diagonal tile(s), including en passant (next line)
+                                    (board[t][s].type == type.BLANK && board[t][r].type == type.PAWN && board[t][r].team != this.team && board[t][r].case)) { 
                 possible.push([t, s]);
             } 
         }
     }
-
     return possible;
 }
 
-function knightMoves(knight) {
+function knight() {
     const possible = new Array();
-    var c, r;
-    CR = getCR(knight);
-    c = CR[0]; r = CR[1];
-    
     for (var i = -2; i <= 2; i++) {
         for (var j = -2; j <= 2; j++) {
-            var t = c+i;
-            var s = r+j;
+            var t = this.col+i;
+            var s = this.row+j;
             // L shaped movement — In boundaries — Not team's piece
-            if (Math.abs(i)+Math.abs(j) == 3 && t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].piece.team != knight.piece.team) {
+            if (Math.abs(i)+Math.abs(j) == 3 && t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].team != this.team) {
                 possible.push([t, s]);
             }
         }
     }
-
     return possible;
 }
 
-function bishopMoves(bishop) {
+function bishop() {
     const possible = new Array();
-    var c, r;
-    CR = getCR(bishop);
-    c = CR[0]; r = CR[1];
-
-    for (var i = 1; i <= c; i++) { // UPLEFT
-        var t = c-i;
-        var s = r-i;
+    for (var i = 1; i <= this.col; i++) { // UPLEFT
+        var t = this.col-i;
+        var s = this.row-i;
         if (t < 0 || s < 0) break;
-        if (board[t][s].piece.type == type.BLANK) {
+        if (board[t][s].type == type.BLANK) {
             possible.push([t, s]);
-        } else if (board[t][s].piece.team != bishop.piece.team) {
+        } else if (board[t][s].team != this.team) {
             possible.push([t, s]);
             break;
         } else {
             break;
         }
     }
-    for (var i = 1; i <= c; i++) { // DOWNLEFT
-        var t = c-i;
-        var s = r+i;
+    for (var i = 1; i <= this.col; i++) { // DOWNLEFT
+        var t = this.col-i;
+        var s = this.row+i;
         if (t < 0 || s >= 8) break;
-        if (board[t][s].piece.type == type.BLANK) {
+        if (board[t][s].type == type.BLANK) {
             possible.push([t, s]);
-        } else if (board[t][s].piece.team != bishop.piece.team) {
+        } else if (board[t][s].team != this.team) {
             possible.push([t, s]);
             break;
         } else {
             break;
         }
     }
-    for (var i = 1; i <= 8-c; i++) { // DOWNRIGHT
-        var t = c+i;
-        var s = r+i;
+    for (var i = 1; i <= 8-this.col; i++) { // DOWNRIGHT
+        var t = this.col+i;
+        var s = this.row+i;
         if (t >= 8 || s >= 8) break;
-        if (board[t][s].piece.type == type.BLANK) {
+        if (board[t][s].type == type.BLANK) {
             possible.push([t, s]);
-        } else if (board[t][s].piece.team != bishop.piece.team) {
+        } else if (board[t][s].team != this.team) {
             possible.push([t, s]);
             break;
         } else {
             break;
         }
     }
-    for (i = 1; i <= 8-c; i++) { // UPRIGHT
-        var t = c+i;
-        var s = r-i;
+    for (i = 1; i <= 8-this.col; i++) { // UPRIGHT
+        var t = this.col+i;
+        var s = this.row-i;
         if (t >= 8 || s < 0) break;
-        if (board[t][s].piece.type == type.BLANK) {
+        if (board[t][s].type == type.BLANK) {
             possible.push([t, s]);
-        } else if (board[t][s].piece.team != bishop.piece.team) {
+        } else if (board[t][s].team != this.team) {
             possible.push([t, s]);
             break;
         } else {
             break;
         }
     }
-
     return possible;
 }
 
-function rookMoves(rook) {
+function rook() {
     const possible = new Array();
-    var c, r;
-    CR = getCR(rook);
-    c = CR[0]; r = CR[1];
-
-    for (var i = -1; i >= -c; i--) { // LEFT
-        var t = c+i;
-        if (board[t][r].piece.type == type.BLANK) {
-            possible.push([t, r]);
-        } else if (board[t][r].piece.team != rook.piece.team) {
-            possible.push([t, r]);
+    for (var i = -1; i >= -this.col; i--) { // LEFT
+        var t = this.col+i;
+        if (board[t][this.row].type == type.BLANK) {
+            possible.push([t, this.row]);
+        } else if (board[t][this.row].team != this.team) {
+            possible.push([t, this.row]);
             break;
         } else {
             break;
         }
     }
-    for (var i = 1; i < 8-c; i++) { // RIGHT
-        var t = c+i;
-        if (board[t][r].piece.type == type.BLANK) {
-            possible.push([t, r]);
-        } else if (board[t][r].piece.team != rook.piece.team) {
-            possible.push([t, r]);
+    for (var i = 1; i < 8-this.col; i++) { // RIGHT
+        var t = this.col+i;
+        if (board[t][this.row].type == type.BLANK) {
+            possible.push([t, this.row]);
+        } else if (board[t][this.row].team != this.team) {
+            possible.push([t, this.row]);
             break;
         } else {
             break;
         }
     }
-    for (var j = -1; j >= -r; j--) { // UP
-        var s = r+j;
-        if (board[c][s].piece.type == type.BLANK) {
-            possible.push([c, s]);
-        } else if (board[c][s].piece.team != rook.piece.team) {
-            possible.push([c, s]);
+    for (var j = -1; j >= -this.row; j--) { // UP
+        var s = this.row+j;
+        if (board[this.col][s].type == type.BLANK) {
+            possible.push([this.col, s]);
+        } else if (board[this.col][s].team != this.team) {
+            possible.push([this.col, s]);
             break;
         } else {
             break;
         }
     }
-    for (var j = 1; j < 8-r; j++) { // DOWN
-        var s = r+j;
-        if (board[c][s].piece.type == type.BLANK) {
-            possible.push([c, s]);
-        } else if (board[c][s].piece.team != rook.piece.team) {
-            possible.push([c, s]);
+    for (var j = 1; j < 8-this.row; j++) { // DOWN
+        var s = this.row+j;
+        if (board[this.col][s].type == type.BLANK) {
+            possible.push([this.col, s]);
+        } else if (board[this.col][s].team != this.team) {
+            possible.push([this.col, s]);
             break;
         } else {
             break;
         }
     }
-
     return possible;
 }
 
-function queenMoves(queen) {
-    var bishop = bishopMoves(queen);
-    var rook = rookMoves(queen);
-    return bishop.concat(rook);
+function queen() {
+    var b = bishop();
+    var r = rook();
+    return b.concat(r);
 }
 
-// Assumes pieces aren't protected
-function kingMoves(king) {
+function king() {
     const possible = new Array();
-    var c, r;
-    CR = getCR(king);
-    c = CR[0]; r = CR[1];
-
     // Normal one-tile movements
     for (var i = -1; i <= 1; i++) {
         for (var j = -1; j <= 1; j++) {
-            var t = c+i;
-            var s = r+j;
+            var t = this.col+i;
+            var s = this.row+j;
             // L shaped movement — In boundaries — Not team's piece
-            if (t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].piece.team != king.piece.team) {
+            if (t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].team != this.team) {
                 possible.push([t, s]);
             }
         }
     }
-
     // Castling
     var rank;
-    king.piece.team == team.WHITE ? rank = 7 : rank = 0; 
-    if (king.piece.case && c == 4 && r == rank) {
-        if (board[7][rank].piece.type == type.ROOK && board[7][rank].piece.case) { // King side
+    this.team == team.WHITE ? rank = 7 : rank = 0; 
+    if (this.case && this.team == 4 && r == rank) {
+        if (board[7][rank].type == type.ROOK && board[7][rank].case) { // King side
             var gap = true;
-            for (var i = c+1; i < 7; i++) {
-                if (board[i][rank].piece.type != type.BLANK) {
+            for (var i = this.team+1; i < 7; i++) {
+                if (board[i][rank].type != type.BLANK) {
                     gap = false;
                 }
             }
             if (gap) possible.push([7, rank]);
         }
-        if (board[0][rank].piece.type == type.ROOK && board[0][rank].piece.case) { // King side
+        if (board[0][rank].type == type.ROOK && board[0][rank].case) { // King side
             var gap = true;
-            for (var i = c-1; i > 0; i--) {
-                if (board[i][rank].piece.type != type.BLANK) {
+            for (var i = this.team-1; i > 0; i--) {
+                if (board[i][rank].type != type.BLANK) {
                     gap = false;
                 }
             }
             if (gap) possible.push([0, rank]);
         }
     }
-
     return possible;
 }

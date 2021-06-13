@@ -1,6 +1,5 @@
 var volume = 0.225;
-var promotionSquare;
-var active, possible;
+var active, promotion;
 var down, drag, pos;
 
 function setPosition(e) {
@@ -18,112 +17,88 @@ function getSquare(e) {
         var r = Math.floor(y / s);
         return board[c][r];
     }
-    return undefined
+    return undefined;
 }
 
 // Copy active piece to new square then clear
 function copyClear(temp, c, r, log) {
-    var tp = temp.piece.type;
-    var tm = temp.piece.team;
-    var tc = temp.piece.case;
-    board[c][r].piece.type = tp;
-    board[c][r].piece.team = tm;
-    board[c][r].piece.case = tc;
-    temp.piece.clear();
+    board[c][r] = Object.assign({}, temp);
+    board[c][r].col = c;
+    board[c][r].row = r;
+    temp.clear();
     if (log) {
-        console.log(`${tm}${tp} ${temp.col}${temp.row}→${board[c][r].col}${board[c][r].row}`);
+        console.log(`${temp.team}${temp.type} ${cols[temp.col]}${rows[temp.row]}→${cols[board[c][r].col]}${rows[board[c][r].row]}`);
     }
 }
 
 function activatePiece(temp) {
-    if (temp != undefined && temp.piece.type != type.BLANK && active != temp && temp.piece.team == turn) {
-        if (possible != undefined) {
-            var CR = getCR(temp);
-            for (const p of possible) {
-                if (p[0] == CR[0] && p[1] == CR[1]) {
+    if (temp != undefined && temp.type != type.BLANK && active != temp && temp.team == turn) {
+        if (temp.moves() != undefined) {
+            for (const m of temp.moves()) {
+                if (m[0] == temp.col && m[1] == temp.row) {
                     return;
                 }
             }
         }
         active = temp;
-        switch(active.piece.type) {
-            case type.PAWN:
-                possible = pawnMoves(active);
-                break;
-            case type.KNIGHT:
-                possible = knightMoves(active);
-                break;
-            case type.BISHOP:
-                possible = bishopMoves(active);
-                break;
-            case type.ROOK:
-                possible = rookMoves(active);
-                break;
-            case type.QUEEN:
-                possible = queenMoves(active);
-                break;
-            case type.KING:
-                possible = kingMoves(active);
-                break;
-        }
-        move = undefined;
     }
 }
 
-function movePiece(move) {    
-    if (move != undefined && possible != undefined && active != move) { 
-        var MCR = getCR(move);
-        var ACR = getCR(active);
-        for (const p of possible) {
-            if (p[0] == MCR[0] && p[1] == MCR[1]) {
+function movePiece(temp) {    
+    if (temp != undefined && temp.moves() != undefined && active != temp) { 
+        for (const m of temp.moves()) {
+            if (m[0] == temp.col && m[1] == temp.row) {
                 drag = false;
                 var standard = true;
 
                 // Update case status and handle special cases
-                if (active.piece.case != undefined) {
-                    switch(active.piece.type) {
+                if (active.case != undefined) {
+                    switch(active.type) {
                         case type.PAWN:
                             var d, l, r; // direction, left condition and right condition
                             turn == team.WHITE ? d = -1 : d = 1;
                 
                             l = r = false;
-                            if (ACR[0]-1 >= 0) l = board[ACR[0]-1][MCR[1]].piece.type == type.PAWN;
-                            if (ACR[0]+1 < 8) r = board[ACR[0]+1][MCR[1]].piece.type == type.PAWN;
-                            if (MCR[1]-ACR[1] == (d*2) && (l || r)) {
-                                active.piece.case = true;
+                            if (active.col-1 >= 0) l = board[active.col-1][temp.row].type == type.PAWN;
+                            if (active.col+1 < 8) r = board[active.col+1][temp.row].type == type.PAWN;
+                            if (temp.row-active.row == (d*2) && (l || r)) {
+                                active.case = true;
                             } else { // turn back false in case the condition was met before but no longer does
-                                active.piece.case = false;
+                                active.case = false;
                             }
-                            if (board[MCR[0]][MCR[1]].piece.type == type.BLANK && ACR[0] != MCR[0]) { // en passant capture
-                                board[MCR[0]][MCR[1]-d].piece.clear();
-                            } else if (MCR[1] == oponentRank) { // pawn promotion
-                                promotionSquare = board[MCR[0]][MCR[1]];
-                                active.piece.clear();
+                            if (board[temp.col][temp.row].type == type.BLANK && active.col != temp.col) { // en passant capture
+                                board[temp.col][temp.row-d].clear();
+                            } else if (temp.row == oponentRank) { // pawn promotion
+                                promotion = board[temp.col][temp.row];
+                                active.clear();
+                                active = undefined;
+                                possible = [];
+                                return;
                             }
                             break;
                         case type.ROOK:
-                            active.piece.case = false;
+                            active.case = false;
                             break;
                         case type.KING:
-                            if (active.piece.case) { // castling
-                                if (MCR[0] == 7) { // king side
-                                    copyClear(active, 6, selfRank, false);
-                                    copyClear(board[7][selfRank], 5, selfRank, false);
+                            if (active.case) { // castling
+                                if (temp.col == 7) { // king side
+                                    copyClear(active, 6, temp.team.rank[0], false);
+                                    copyClear(board[7][temp.team.rank[0]], 5, temp.team.rank[0], false);
                                     console.log(`${turn} O-O`);
                                     standard = false;
-                                } else if (MCR[0] == 0) { // queen side
-                                    copyClear(active, 2, selfRank, false);
-                                    copyClear(board[0][selfRank], 3, selfRank, false);
+                                } else if (temp.col == 0) { // queen side
+                                    copyClear(active, 2, temp.team.rank[0], false);
+                                    copyClear(board[0][temp.team.rank[0]], 3, temp.team.rank[0], false);
                                     console.log(`${turn} O-O-O`);
                                     standard = false;
                                 }
                             }
-                            active.piece.case = false;
+                            active.case = false;
                             break;
                     }
                 }
                 
-                if (standard) copyClear(active, MCR[0], MCR[1], true);
+                if (standard) copyClear(active, temp.col, temp.row, true);
                 var audio = new Audio("audio/move.wav");
                 audio.volume = volume;
                 audio.play();
@@ -150,9 +125,13 @@ document.addEventListener("click", e => {
 
 document.addEventListener('mousedown', e => {
     down = true;
-    temp = getSquare(e);
-    activatePiece(temp);
-    movePiece(temp);
+    if (promotion != undefined) {
+        //
+    } else {
+        temp = getSquare(e);
+        activatePiece(temp);
+        movePiece(temp);
+    }
 });
   
 document.addEventListener('mousemove', e => {
