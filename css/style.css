@@ -2,12 +2,18 @@ body {
     padding: 25px;
     font-family: 'Open Sans', sans-serif;
     text-align: center;
-    color: rgba(255, 255, 255, 0.53595);
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.0;
 }
 
 canvas { 
     display: block;
     margin: auto;
-    border: 1px solid rgba(255, 255, 255, 0.53595);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 1px;
+}
+
+a {
+    color: rgba(18, 246, 146, 0.75);
+    text-decoration: none;
 }
