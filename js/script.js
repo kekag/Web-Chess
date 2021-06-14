@@ -125,7 +125,58 @@ function bishopThreats() {
 
 function bishopMoves() {
     const moves = new Array();
-
+    for (var i = 1; i <= this.col; i++) { // UPLEFT
+        var t = this.col-i;
+        var s = this.row-i;
+        if (t < 0 || s < 0) break;
+        if (board[t][s].piece == piece.BLANK) {
+            moves.push([t, s]);
+        } else if (board[t][s].team != this.team) {
+            moves.push([t, s]);
+            break;
+        } else {
+            break;
+        }
+    }
+    for (var i = 1; i <= this.col; i++) { // DOWNLEFT
+        var t = this.col-i;
+        var s = this.row+i;
+        if (t < 0 || s >= 8) break;
+        if (board[t][s].piece == piece.BLANK) {
+            moves.push([t, s]);
+        } else if (board[t][s].team != this.team) {
+            moves.push([t, s]);
+            break;
+        } else {
+            break;
+        }
+    }
+    for (var i = 1; i <= 8-this.col; i++) { // DOWNRIGHT
+        var t = this.col+i;
+        var s = this.row+i;
+        if (t >= 8 || s >= 8) break;
+        if (board[t][s].piece == piece.BLANK) {
+            moves.push([t, s]);
+        } else if (board[t][s].team != this.team) {
+            moves.push([t, s]);
+            break;
+        } else {
+            break;
+        }
+    }
+    for (i = 1; i <= 8-this.col; i++) { // UPRIGHT
+        var t = this.col+i;
+        var s = this.row-i;
+        if (t >= 8 || s < 0) break;
+        if (board[t][s].piece == piece.BLANK) {
+            moves.push([t, s]);
+        } else if (board[t][s].team != this.team) {
+            moves.push([t, s]);
+            break;
+        } else {
+            break;
+        }
+    }
     return moves;
 }
 
@@ -180,7 +231,50 @@ function rookThreats() {
 
 function rookMoves() {
     const moves = new Array();
-
+    for (var i = -1; i >= -this.col; i--) { // LEFT
+        var t = this.col+i;
+        if (board[t][this.row].piece == piece.BLANK) {
+            moves.push([t, this.row]);
+        } else if (board[t][this.row].team != this.team) {
+            moves.push([t, this.row]);
+            break;
+        } else {
+            break;
+        }
+    }
+    for (var i = 1; i < 8-this.col; i++) { // RIGHT
+        var t = this.col+i;
+        if (board[t][this.row].piece == piece.BLANK) {
+            moves.push([t, this.row]);
+        } else if (board[t][this.row].team != this.team) {
+            moves.push([t, this.row]);
+            break;
+        } else {
+            break;
+        }
+    }
+    for (var j = -1; j >= -this.row; j--) { // UP
+        var s = this.row+j;
+        if (board[this.col][s].piece == piece.BLANK) {
+            moves.push([this.col, s]);
+        } else if (board[this.col][s].team != this.team) {
+            moves.push([this.col, s]);
+            break;
+        } else {
+            break;
+        }
+    }
+    for (var j = 1; j < 8-this.row; j++) { // DOWN
+        var s = this.row+j;
+        if (board[this.col][s].piece == piece.BLANK) {
+            moves.push([this.col, s]);
+        } else if (board[this.col][s].team != this.team) {
+            moves.push([this.col, s]);
+            break;
+        } else {
+            break;
+        }
+    }
     return moves;
 }
 
@@ -290,7 +384,7 @@ const piece = {
         moves: kingMoves
         
     },
-    BLANK:  ""
+    BLANK:  "",
 }
 Object.freeze(piece);
 
@@ -328,6 +422,7 @@ for (var i = 0; i < board.length; i++) {
     board[i] = new Array(8);
 }
 
+
 function Square(piece, team, col, row, special) {
     this.piece = piece;
     this.team = team;
@@ -337,7 +432,7 @@ function Square(piece, team, col, row, special) {
     this.threats = piece.threats;
     this.moves = piece.moves;
     this.clear = function() {
-        this.piece = piece.BLANK;
+        this.piece = "";
         this.team = undefined;
         this.case = undefined;
         this.threats = undefined;
@@ -377,9 +472,11 @@ for (var c = 0; c < 8; c++) {
             }
         } else {
             p = piece.BLANK;
+            t = undefined;
+            special = undefined;
         }
 
-        var square = new Square(p, t, c, r, special, t.func);
+        var square = new Square(p, t, c, r, special);
         board[c][r] = square;
     }
 }
@@ -424,7 +521,7 @@ function copyClear(temp, c, r, log) {
     board[c][r].row = r;
     temp.clear();
     if (log) {
-        console.log(`${temp.team}${temp.piece} ${cols[temp.col]}${rows[temp.row]}→${cols[board[c][r].col]}${rows[board[c][r].row]}`);
+        console.log(`${board[c][r].team.value}${board[c][r].piece.value} ${cols[temp.col]}${rows[temp.row]}→${cols[board[c][r].col]}${rows[board[c][r].row]}`);
     }
 }
 
@@ -442,8 +539,8 @@ function activatePiece(temp) {
 }
 
 function movePiece(temp) {
-    if (temp != undefined && temp.moves() != undefined && active != temp) { 
-        for (const m of temp.moves()) {
+    if (active != temp && temp != undefined && active != undefined) { 
+        for (const m of active.moves()) {
             if (m[0] == temp.col && m[1] == temp.row) {
                 drag = false;
                 var standard = true;
@@ -452,20 +549,21 @@ function movePiece(temp) {
                 if (active.case != undefined) {
                     switch(active.piece) {
                         case piece.PAWN:
-                            var d, l, r; // direction, left condition and right condition
-                            turn == team.WHITE ? d = -1 : d = 1;
-                
-                            l = r = false;
-                            if (active.col-1 >= 0) l = board[active.col-1][temp.row].piece == piece.PAWN;
-                            if (active.col+1 < 8) r = board[active.col+1][temp.row].piece == piece.PAWN;
-                            if (temp.row-active.row == (d*2) && (l || r)) {
+                            var l, r = false;
+                            if (active.col-1 >= 0) {
+                                l = board[active.col-1][temp.row].piece == piece.PAWN;
+                            }
+                            if (active.col+1 < 8) {
+                                r = board[active.col+1][temp.row].piece == piece.PAWN;
+                            }
+                            if (temp.row-active.row == (turn.dir*2) && (l || r)) {
                                 active.case = true;
                             } else { // turn back false in case the condition was met before but no longer does
                                 active.case = false;
                             }
                             if (board[temp.col][temp.row].piece == piece.BLANK && active.col != temp.col) { // en passant capture
-                                board[temp.col][temp.row-d].clear();
-                            } else if (temp.row == oponentRank) { // pawn promotion
+                                board[temp.col][temp.row-turn.dir].clear();
+                            } else if (temp.row == turn.rank[7]) { // pawn promotion
                                 promotion = board[temp.col][temp.row];
                                 active.clear();
                                 active = undefined;
@@ -543,37 +641,37 @@ document.addEventListener('mousemove', e => {
 //
 
 // Draw individual squares
-ctx.font = `${s/6}px sans-serif`;
-var [dark, light] = ["#C0C0C0", "#525252"];
-var squareColor, textColor;
-for (var c = 0; c < 8; c++) {
-    for (var r = 0; r < 8; r++) {
-        if (c % 2 == 0) {
-            r % 2 == 0 ? squareColor = light : squareColor = dark;
-        } else {
-            r % 2 == 0 ? squareColor = dark : squareColor = light;
-        }
-        squareColor == light ? textColor = dark : textColor = light;
+function drawSquare() {
+    ctx.font = `${s/6}px sans-serif`;
+    var [dark, light] = ["#C0C0C0", "#525252"];
+    var squareColor, textColor;
+    for (var c = 0; c < 8; c++) {
+        for (var r = 0; r < 8; r++) {
+            if (c % 2 == 0) {
+                r % 2 == 0 ? squareColor = light : squareColor = dark;
+            } else {
+                r % 2 == 0 ? squareColor = dark : squareColor = light;
+            }
+            squareColor == light ? textColor = dark : textColor = light;
 
-        // Draw filled tile
-        ctx.beginPath();
-        ctx.rect(c*s, r*s, s, s);
-        ctx.fillStyle = squareColor;
-        ctx.fill();
-        ctx.closePath();
+            // Draw filled tile
+            ctx.beginPath();
+            ctx.rect(c*s, r*s, s, s);
+            ctx.fillStyle = squareColor;
+            ctx.fill();
+            ctx.closePath();
 
-        // Draw column and row letters and digits
-        ctx.strokeStyle = textColor;
-        if (r == 7) {
-            ctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
-        }
-        if (c == 0) {
-            ctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
+            // Draw column and row letters and digits
+            ctx.strokeStyle = textColor;
+            if (r == 7) {
+                ctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
+            }
+            if (c == 0) {
+                ctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
+            }
         }
     }
 }
-
-ctx.save();
 
 function highlightSquare(c, r, glow, color) {
     var alpha = 0.7;
@@ -590,10 +688,8 @@ function highlightSquare(c, r, glow, color) {
 }
 
 function drawPiece(c, r) {
-    if (board[c][r].piece == piece.BLANK) {
-        return;
-    }
-
+    if (board[c][r].piece == piece.BLANK) return;
+    
     var img = new Image(s, s);
     img.src = `sprites/${board[c][r].team.value}${board[c][r].piece.value}.svg`
 
@@ -608,61 +704,28 @@ function drawPiece(c, r) {
     ctx.drawImage(img, x, y, s, s);
 }
 
-var highlighted = false;
-
 function display() {
-    ctx.restore();
-    
-    if (active != undefined && !highlighted) {
-        highlighted = true;
-        highlightSquare(active.col, active.row, 0.015, [255, 255, 255]);
-        for (const m of active.moves()) {
-            console.log("hello")
-            highlightSquare(m[0], m[1], 0.015, [18, 246, 146]);
-        }
-    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // No easy way to draw board once, save the state and restore after each refresh, so this will work but isn't a solution I like
+    drawSquare();
     var ac, ar;
     if (active != undefined) {
+        highlightSquare(active.col, active.row, 0.015, [255, 255, 255]);
+        for (const m of active.moves()) {
+            highlightSquare(m[0], m[1], 0.015, [18, 246, 146]);
+        }
         ac = active.col;
         ar = active.row;
     }
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
             if (c != ac || r != ar) {
-                // if (board[c][r] != promotion) {
-                    drawPiece(c, r);
-                // } else {
-                //     highlightSquare(c, r, 0.015, [18, 246, 146]);
-
-                //     ctx.strokeStyle = `rgba(0, 0, 0, 1.0)`;
-
-                //     ctx.beginPath();
-                //     ctx.moveTo(c*s + s/2, r*s);
-                //     ctx.lineTo(c*s + s/2, r*s + s);
-                //     ctx.stroke();
-
-                //     ctx.beginPath();
-                //     ctx.moveTo(c*s, r*s + s/2);
-                //     ctx.lineTo(c*s + s, r*s + s/2);
-                //     ctx.stroke();
-
-                //     var t;
-                //     r == 0 ? t = team.WHITE : t = team.BLACK;
-
-                //     var img = new Image(s/2, s/2);
-                //     img.src = `sprites/${t}Q.svg` 
-                //     ctx.drawImage(img, c*s, r*s, s/2, s/2);
-                //     img.src = `sprites/${t}R.svg` 
-                //     ctx.drawImage(img, c*s+s/2, r*s, s/2, s/2);
-                //     img.src = `sprites/${t}B.svg` 
-                //     ctx.drawImage(img, c*s, r*s+s/2, s/2, s/2);
-                //     img.src = `sprites/${t}N.svg` 
-                //     ctx.drawImage(img, c*s+s/2, r*s+s/2, s/2, s/2);
-                // }
+                drawPiece(c, r);
             }
         }
     }
     if (active != undefined) drawPiece(ac, ar);
 }
 
-setInterval(display, 100);
+setInterval(display, 4);
