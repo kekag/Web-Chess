@@ -38,11 +38,11 @@ function pawnMoves() {
 
 function knightThreats() {
     const threats = new Array();
+    var t, s;
     for (var i = -2; i <= 2; i++) {
         for (var j = -2; j <= 2; j++) {
-            var t = this.col+i;
-            var s = this.row+j;
-            // L shaped movement — In boundaries — Not team's piece
+            t = this.col+i;
+            s = this.row+j;
             if (Math.abs(i)+Math.abs(j) == 3 && t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].team != this.team) {
                 threats.push([t, s]);
             }
@@ -57,7 +57,6 @@ function knightMoves() {
         for (var j = -2; j <= 2; j++) {
             var t = this.col+i;
             var s = this.row+j;
-            // L shaped movement — In boundaries — Not team's piece
             if (Math.abs(i)+Math.abs(j) == 3 && t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].team != this.team) {
                 moves.push([t, s]);
             }
@@ -67,114 +66,44 @@ function knightMoves() {
 }
 
 function bishopThreats() {
-    const threats = new Array();
-    for (var i = 1; i <= this.col; i++) { // UPLEFT
-        var t = this.col-i;
-        var s = this.row-i;
-        if (t < 0 || s < 0) break;
-        if (board[t][s].piece == piece.BLANK) {
-            threats.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            threats.push([t, s]);
-            break;
-        } else {
-            break;
+    const moves = new Array();
+    var i, j, t, s, edge;
+    for (i = 0; i < 4; i++) {
+        i < 2 ? edge = this.col : edge = 8 - this.col;
+        for (j = 1; j <= edge; j++) {
+            i < 2 ? t = this.col - j : t = this.col + j;
+            i == 1 || i == 2 ? s = this.row + j : s = this.row - j;
+            if (t < 0 || s < 0 || t >= 8 || s >= 8) break;
+            if (board[t][s].piece == piece.BLANK) {
+                moves.push([t, s]);
+            } else if (board[t][s].team != this.team) {
+                moves.push([t, s]);
+                break;
+            } else {
+                break;
+            }
         }
     }
-    for (var i = 1; i <= this.col; i++) { // DOWNLEFT
-        var t = this.col-i;
-        var s = this.row+i;
-        if (t < 0 || s >= 8) break;
-        if (board[t][s].piece == piece.BLANK) {
-            threats.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            threats.push([t, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var i = 1; i <= 8-this.col; i++) { // DOWNRIGHT
-        var t = this.col+i;
-        var s = this.row+i;
-        if (t >= 8 || s >= 8) break;
-        if (board[t][s].piece == piece.BLANK) {
-            threats.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            threats.push([t, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (i = 1; i <= 8-this.col; i++) { // UPRIGHT
-        var t = this.col+i;
-        var s = this.row-i;
-        if (t >= 8 || s < 0) break;
-        if (board[t][s].piece == piece.BLANK) {
-            threats.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            threats.push([t, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    return threats;
+    return moves;
 }
 
 function bishopMoves() {
     const moves = new Array();
-    for (var i = 1; i <= this.col; i++) { // UPLEFT
-        var t = this.col-i;
-        var s = this.row-i;
-        if (t < 0 || s < 0) break;
-        if (board[t][s].piece == piece.BLANK) {
-            moves.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            moves.push([t, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var i = 1; i <= this.col; i++) { // DOWNLEFT
-        var t = this.col-i;
-        var s = this.row+i;
-        if (t < 0 || s >= 8) break;
-        if (board[t][s].piece == piece.BLANK) {
-            moves.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            moves.push([t, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var i = 1; i <= 8-this.col; i++) { // DOWNRIGHT
-        var t = this.col+i;
-        var s = this.row+i;
-        if (t >= 8 || s >= 8) break;
-        if (board[t][s].piece == piece.BLANK) {
-            moves.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            moves.push([t, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (i = 1; i <= 8-this.col; i++) { // UPRIGHT
-        var t = this.col+i;
-        var s = this.row-i;
-        if (t >= 8 || s < 0) break;
-        if (board[t][s].piece == piece.BLANK) {
-            moves.push([t, s]);
-        } else if (board[t][s].team != this.team) {
-            moves.push([t, s]);
-            break;
-        } else {
-            break;
+    var i, j, t, s, edge;
+    for (i = 0; i < 4; i++) {
+        i < 2 ? edge = this.col : edge = 8 - this.col;
+        for (j = 1; j <= edge; j++) {
+            i < 2 ? t = this.col - j : t = this.col + j;
+            i == 1 || i == 2 ? s = this.row + j : s = this.row - j;
+            if (t < 0 || s < 0 || t >= 8 || s >= 8) break;
+            if (board[t][s].piece == piece.BLANK) {
+                moves.push([t, s]);
+            } else if (board[t][s].team != this.team) {
+                moves.push([t, s]);
+                break;
+            } else {
+                break;
+            }
         }
     }
     return moves;
@@ -182,48 +111,29 @@ function bishopMoves() {
 
 function rookThreats() {
     const threats = new Array();
-    for (var i = -1; i >= -this.col; i--) { // LEFT
-        var t = this.col+i;
-        if (board[t][this.row].piece == piece.BLANK) {
-            threats.push([t, this.row]);
-        } else if (board[t][this.row].team != this.team) {
-            threats.push([t, this.row]);
-            break;
+    var i, j, t, s, edge;
+    for (var i = 0; i < 4; i++) {
+        if (i % 2 == 0) {
+            i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
         } else {
-            break;
+            i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
         }
-    }
-    for (var i = 1; i < 8-this.col; i++) { // RIGHT
-        var t = this.col+i;
-        if (board[t][this.row].piece == piece.BLANK) {
-            threats.push([t, this.row]);
-        } else if (board[t][this.row].team != this.team) {
-            threats.push([t, this.row]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var j = -1; j >= -this.row; j--) { // UP
-        var s = this.row+j;
-        if (board[this.col][s].piece == piece.BLANK) {
-            threats.push([this.col, s]);
-        } else if (board[this.col][s].team != this.team) {
-            threats.push([this.col, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var j = 1; j < 8-this.row; j++) { // DOWN
-        var s = this.row+j;
-        if (board[this.col][s].piece == piece.BLANK) {
-            threats.push([this.col, s]);
-        } else if (board[this.col][s].team != this.team) {
-            threats.push([this.col, s]);
-            break;
-        } else {
-            break;
+        for (var j = 1; j < edge; j++) {
+            if (i % 2 == 0) {
+                i < 2 ? t = this.col - j : t = this.col + j;
+                s = this.row
+            } else {
+                t = this.col;
+                i < 2 ? s = this.row - j : s = this.row + j;
+            }
+            if (board[t][s].piece == piece.BLANK) {
+                moves.push([t, s]);
+            } else if (board[t][s].team != this.team) {
+                moves.push([t, s]);
+                break;
+            } else {
+                break;
+            }
         }
     }
     return threats;
@@ -231,63 +141,112 @@ function rookThreats() {
 
 function rookMoves() {
     const moves = new Array();
-    for (var i = -1; i >= -this.col; i--) { // LEFT
-        var t = this.col+i;
-        if (board[t][this.row].piece == piece.BLANK) {
-            moves.push([t, this.row]);
-        } else if (board[t][this.row].team != this.team) {
-            moves.push([t, this.row]);
-            break;
+    var i, j, t, s, edge;
+    for (var i = 0; i < 4; i++) {
+        if (i % 2 == 0) {
+            i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
         } else {
-            break;
+            i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
         }
-    }
-    for (var i = 1; i < 8-this.col; i++) { // RIGHT
-        var t = this.col+i;
-        if (board[t][this.row].piece == piece.BLANK) {
-            moves.push([t, this.row]);
-        } else if (board[t][this.row].team != this.team) {
-            moves.push([t, this.row]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var j = -1; j >= -this.row; j--) { // UP
-        var s = this.row+j;
-        if (board[this.col][s].piece == piece.BLANK) {
-            moves.push([this.col, s]);
-        } else if (board[this.col][s].team != this.team) {
-            moves.push([this.col, s]);
-            break;
-        } else {
-            break;
-        }
-    }
-    for (var j = 1; j < 8-this.row; j++) { // DOWN
-        var s = this.row+j;
-        if (board[this.col][s].piece == piece.BLANK) {
-            moves.push([this.col, s]);
-        } else if (board[this.col][s].team != this.team) {
-            moves.push([this.col, s]);
-            break;
-        } else {
-            break;
+        for (var j = 1; j < edge; j++) {
+            if (i % 2 == 0) {
+                i < 2 ? t = this.col - j : t = this.col + j;
+                s = this.row
+            } else {
+                t = this.col;
+                i < 2 ? s = this.row - j : s = this.row + j;
+            }
+            if (board[t][s].piece == piece.BLANK) {
+                moves.push([t, s]);
+            } else if (board[t][s].team != this.team) {
+                moves.push([t, s]);
+                break;
+            } else {
+                break;
+            }
         }
     }
     return moves;
 }
 
 function queenThreats() {
-    var b = bishopThreats();
-    var r = rookThreats();
-    return b.concat(r);
+    const moves = new Array();
+    var i, j, t, s, edge;
+    for (var i = 0; i < 8; i++) {
+        if (i < 4) {
+            if (i % 2 == 0) {
+                i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
+            } else {
+                i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
+            }
+        } else {
+            i < 2 ? edge = this.col + 1 : edge = 8 - this.col + 1;
+        }
+        for (var j = 1; j < edge; j++) {
+            if (i < 4) {
+                if (i % 2 == 0) {
+                    i < 2 ? t = this.col - j : t = this.col + j;
+                    s = this.row
+                } else {
+                    t = this.col;
+                    i < 2 ? s = this.row - j : s = this.row + j;
+                }
+            } else {
+                i < 2 ? t = this.col-j : t = this.col+j;
+                i == 1 || i == 2 ? s = this.row+j : s = this.row-j;
+            }
+            if (t < 0 || s < 0 || t >= 8 || s >= 8) break;
+            if (board[t][s].piece == piece.BLANK) {
+                moves.push([t, s]);
+            } else if (board[t][s].team != this.team) {
+                moves.push([t, s]);
+                break;
+            } else {
+                break;
+            }
+        }
+    }
+    return moves;
 }
 
 function queenMoves() {
-    var b = bishopMoves();
-    var r = rookMoves();
-    return b.concat(r);
+    const moves = new Array();
+    var i, j, t, s, edge;
+    for (var i = 0; i < 8; i++) {
+        if (i < 4) {
+            if (i % 2 == 0) {
+                i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
+            } else {
+                i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
+            }
+        } else {
+            i < 6 ? edge = this.col + 1 : edge = 8 - this.col + 1;
+        }
+        for (var j = 1; j < edge; j++) {
+            if (i < 4) {
+                if (i % 2 == 0) {
+                    i < 2 ? t = this.col - j : t = this.col + j;
+                    s = this.row
+                } else {
+                    t = this.col;
+                    i < 2 ? s = this.row - j : s = this.row + j;
+                }
+            } else {
+                i < 6 ? t = this.col - j : t = this.col + j;
+                i == 6 || i == 7 ? s = this.row + j : s = this.row - j;
+            }
+            if (t < 0 || s < 0 || t >= 8 || s >= 8) break;
+            if (board[t][s].piece == piece.BLANK) {
+                moves.push([t, s]);
+            } else if (board[t][s].team != this.team) {
+                moves.push([t, s]);
+                break;
+            } else {
+                break;
+            }
+        }
+    }
+    return moves;
 }
 
 function kingThreats() {
@@ -382,7 +341,6 @@ const piece = {
         value: "K",
         threats: kingThreats,
         moves: kingMoves
-        
     },
     BLANK:  "",
 }
@@ -728,4 +686,4 @@ function display() {
     if (active != undefined) drawPiece(ac, ar);
 }
 
-setInterval(display, 4);
+setInterval(display, 200);
