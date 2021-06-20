@@ -11,7 +11,7 @@ Made using basic javascript
 
 ### Used resources
 
-[Piece set](https://github.com/ornicar/lila/tree/master/public/piece/alpha) [(credit to Eric Bentzen)](https://github.com/ornicar/lila/blob/master/COPYING.md#exceptions-non-free)
+[Alpha piece set](https://github.com/ornicar/lila/tree/master/public/piece/alpha) [(credit to Eric Bentzen)](https://github.com/ornicar/lila/blob/master/COPYING.md#exceptions-non-free)
 
 [Move sound effect](https://freesound.org/people/mh2o/sounds/351518)
 
