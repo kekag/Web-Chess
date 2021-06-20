@@ -206,7 +206,7 @@ function kingMoves() {
 /* Initialize canvas and board variables */
 //
 
-var canvas = document.getElementById("boardCanvas");
+var canvas = document.getElementById("board");
 var ctx = canvas.getContext("2d");
 var s = canvas.width / 8;
 
@@ -350,7 +350,8 @@ ctx.closePath();
 /* Manage mouse events and moves */
 //
 
-var volume = 0.225;
+var audio = new Audio("audio/move.wav");
+audio.volume = 0.225;
 var active, promotion;
 var down, drag, pos;
 
@@ -372,7 +373,7 @@ function getSquare(e) {
     return undefined;
 }
 
-function clearActive() {
+function deactivate() {
     active = undefined;
     possible = [];
 }
@@ -387,8 +388,13 @@ function copyClear(temp, c, r, log) {
     }
 }
 
+function endTurn() {
+    audio.play();
+    turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;
+}
+
 function activatePiece(temp) {
-    if (temp != undefined && temp.piece != piece.BLANK && active != temp && temp.team == turn) {
+    if (temp.piece != piece.BLANK && active != temp && temp.team == turn) {
         if (temp.moves() != undefined) {
             for (const m of temp.moves()) {
                 if (m[0] == temp.col && m[1] == temp.row) {
@@ -401,7 +407,7 @@ function activatePiece(temp) {
 }
 
 function movePiece(temp) {
-    if (active != temp && temp != undefined && active != undefined) { 
+    if (active != temp && active != undefined) { 
         for (const m of active.moves()) {
             if (m[0] == temp.col && m[1] == temp.row) {
                 drag = false;
@@ -427,7 +433,7 @@ function movePiece(temp) {
                             } else if (temp.row == turn.rank[7]) { // pawn promotion
                                 promotion = board[temp.col][temp.row];
                                 active.clear();
-                                clearActive();
+                                deactivate();
                                 return;
                             }
                             break;
@@ -437,15 +443,19 @@ function movePiece(temp) {
                         case piece.KING:
                             if (active.case) { // castling
                                 if (temp.col == 7) { // king side
+                                    console.log("tee");
                                     copyClear(active, 6, temp.team.rank[0], false);
                                     copyClear(board[7][temp.team.rank[0]], 5, temp.team.rank[0], false);
                                     console.log(`${turn} O-O`);
-                                    standard = false;
+                                    endTurn();
+                                    return;
                                 } else if (temp.col == 0) { // queen side
+                                    console.log("tee");
                                     copyClear(active, 2, temp.team.rank[0], false);
                                     copyClear(board[0][temp.team.rank[0]], 3, temp.team.rank[0], false);
                                     console.log(`${turn} O-O-O`);
-                                    standard = false;
+                                    endTurn();
+                                    return;
                                 }
                             }
                             active.case = false;
@@ -453,17 +463,13 @@ function movePiece(temp) {
                     }
                 }
                 
-                if (standard) copyClear(active, temp.col, temp.row, true);
-                var audio = new Audio("audio/move.wav");
-                audio.volume = volume;
-                audio.play();
-
-                turn == team.WHITE ? turn = team.BLACK : turn = team.WHITE;          
+                copyClear(active, temp.col, temp.row, true);
+                endTurn();
                 break;
             }
         }
         if (!drag) { // Keep drag/drop piece activated
-            clearActive();
+            deactivate();
         }
     }
 }
@@ -472,24 +478,26 @@ document.addEventListener("click", e => {
     down = false;
     if (drag && active != undefined) { // Dropped drag
         temp = getSquare(e);
-        movePiece(temp);
+        if (temp != undefined) {
+            movePiece(temp);
+        }
         drag = false;
     } 
 });
 
 document.addEventListener('mousedown', e => {
     down = true;
-    if (promotion != undefined) {
-        //
-    } else {
-        temp = getSquare(e);
+    temp = getSquare(e);
+    if (temp != undefined) {
         activatePiece(temp);
         movePiece(temp);
+    } else {
+        deactivate();
     }
 });
   
 document.addEventListener('mousemove', e => {
-    if (down && getSquare(e) == active) {
+    if (down && active != undefined && getSquare(e) == active) {
         drag = true;
         setPosition(e);
     }
@@ -502,14 +510,14 @@ document.addEventListener('mousemove', e => {
 // Draw individual squares
 function drawSquare() {
     ctx.font = `${s/6}px sans-serif`;
-    var [dark, light] = ["#C0C0C0", "#525252"];
+    var [light, dark] = ["#B9B9B9", "#3D3D3D"];
     var squareColor, textColor;
     for (var c = 0; c < 8; c++) {
         for (var r = 0; r < 8; r++) {
             if (c % 2 == 0) {
-                r % 2 == 0 ? squareColor = dark : squareColor = light;
-            } else {
                 r % 2 == 0 ? squareColor = light : squareColor = dark;
+            } else {
+                r % 2 == 0 ? squareColor = dark : squareColor = light;
             }
             squareColor == light ? textColor = dark : textColor = light;
 
