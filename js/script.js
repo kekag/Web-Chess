@@ -508,42 +508,36 @@ document.addEventListener('mousemove', e => {
 //
 
 // Draw individual squares
-// function drawBoard() {
-    //var background = document.getElementById("board");
-    //var bgctx = background.getContext("2d");
+ctx.font = `${s/6}px sans-serif`;
+var [light, dark] = ["#B9B9B9", "#3D3D3D"];
+var squareColor, textColor;
+for (var c = 0; c < 8; c++) {
+    for (var r = 0; r < 8; r++) {
+        if (c % 2 == 0) {
+            r % 2 == 0 ? squareColor = light : squareColor = dark;
+        } else {
+            r % 2 == 0 ? squareColor = dark : squareColor = light;
+        }
+        squareColor == light ? textColor = dark : textColor = light;
 
-    ctx.font = `${s/6}px sans-serif`;
-    var [light, dark] = ["#B9B9B9", "#3D3D3D"];
-    var squareColor, textColor;
-    for (var c = 0; c < 8; c++) {
-        for (var r = 0; r < 8; r++) {
-            if (c % 2 == 0) {
-                r % 2 == 0 ? squareColor = light : squareColor = dark;
-            } else {
-                r % 2 == 0 ? squareColor = dark : squareColor = light;
-            }
-            squareColor == light ? textColor = dark : textColor = light;
+        // Draw filled tile
+        ctx.beginPath();
+        ctx.rect(c*s, r*s, s, s);
+        ctx.fillStyle = squareColor;
+        ctx.fill();
+        ctx.closePath();
 
-            // Draw filled tile
-            ctx.beginPath();
-            ctx.rect(c*s, r*s, s, s);
-            ctx.fillStyle = squareColor;
-            ctx.fill();
-            ctx.closePath();
-
-            // Draw column and row letters and digits
-            ctx.strokeStyle = textColor;
-            if (r == 7) {
-                ctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
-            }
-            if (c == 0) {
-                ctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
-            }
+        // Draw column and row letters and digits
+        ctx.strokeStyle = textColor;
+        if (r == 7) {
+            ctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
+        }
+        if (c == 0) {
+            ctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
         }
     }
-    var background = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-//}
+}
+var background = ctx.getImageData(0, 0, canvas.width, canvas.height)
 
 function highlightSquare(c, r, glow, color) {
     var alpha = 0.7;
@@ -577,11 +571,8 @@ function drawPiece(c, r) {
 }
 
 function display() {
-    //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.putImageData(background, 0, 0);
 
-    // No easy way to draw board once, save the state and restore after each refresh, so this will work but isn't a solution I like
-    //drawBoard();
     var ac, ar;
     if (active != undefined) {
         highlightSquare(active.col, active.row, 0.015, [255, 255, 255]);
@@ -601,4 +592,4 @@ function display() {
     if (active != undefined) drawPiece(ac, ar);
 }
 
-setInterval(display, 16);
+setInterval(display, 7);
