@@ -206,7 +206,7 @@ function kingMoves() {
 /* Initialize canvas and board variables */
 //
 
-var canvas = document.getElementById("board");
+var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var s = canvas.width / 8;
 
@@ -342,7 +342,7 @@ for (var c = 0; c < 8; c++) {
 // Draw border around board
 ctx.beginPath();
 ctx.rect(0, 0, canvas.width, canvas.height);
-ctx.strokeStyle = "rgba(255, 255, 255, 0.53595)";
+ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
 ctx.stroke();
 ctx.closePath();
 
@@ -384,7 +384,7 @@ function copyClear(temp, c, r, log) {
     board[c][r].row = r;
     temp.clear();
     if (log) {
-        console.log(`${board[c][r].team.value}${board[c][r].piece.value} ${cols[temp.col]}${rows[temp.row]}→${cols[board[c][r].col]}${rows[board[c][r].row]}`);
+        console.log(`${board[c][r].team.value}${board[c][r].piece.value} ${cols[temp.col]}${rows[temp.row]} ${cols[board[c][r].col]}${rows[board[c][r].row]}`);
     }
 }
 
@@ -508,7 +508,10 @@ document.addEventListener('mousemove', e => {
 //
 
 // Draw individual squares
-function drawSquare() {
+// function drawBoard() {
+    //var background = document.getElementById("board");
+    //var bgctx = background.getContext("2d");
+
     ctx.font = `${s/6}px sans-serif`;
     var [light, dark] = ["#B9B9B9", "#3D3D3D"];
     var squareColor, textColor;
@@ -538,7 +541,9 @@ function drawSquare() {
             }
         }
     }
-}
+    var background = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+//}
 
 function highlightSquare(c, r, glow, color) {
     var alpha = 0.7;
@@ -558,7 +563,7 @@ function drawPiece(c, r) {
     if (board[c][r].piece == piece.BLANK) return;
     
     var img = new Image(s, s);
-    img.src = `sprites/${board[c][r].team.value}${board[c][r].piece.value}.svg`
+    img.src = `graphics/${board[c][r].team.value}${board[c][r].piece.value}.svg`
 
     var x, y;
     if (drag && board[c][r] == active) {
@@ -572,10 +577,11 @@ function drawPiece(c, r) {
 }
 
 function display() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.putImageData(background, 0, 0);
 
     // No easy way to draw board once, save the state and restore after each refresh, so this will work but isn't a solution I like
-    drawSquare();
+    //drawBoard();
     var ac, ar;
     if (active != undefined) {
         highlightSquare(active.col, active.row, 0.015, [255, 255, 255]);
