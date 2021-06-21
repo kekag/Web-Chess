@@ -21,4 +21,4 @@ Made using basic javascript
 
 ---
 
-![Example over-the-board game](lichess_0JWc9Xbd.jpg)
+![Example over-the-board game](image.jpg)
