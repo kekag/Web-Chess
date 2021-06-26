@@ -567,7 +567,7 @@ function drawPiece(c, r) {
     ctx.drawImage(img, x, y, s, s);
 }
 
-var rehighlight, redraw = true;
+// var rehighlight, redraw = true;
 var ac, ar;
 
 function display() {
@@ -578,10 +578,9 @@ function display() {
         }
         ac = active.col;
         ar = active.row;
-        console.log("rehighlighted");
-        rehighlight = false;
+        // rehighlight = false;
     }
-    if (!drag || redraw) {
+   // if (!drag) {
         for (var c = 0; c < 8; c++) {
             for (var r = 0; r < 8; r++) {
                 if (c != ac || r != ar) {
@@ -589,13 +588,11 @@ function display() {
                 }
             }
         }
-        console.log("redrawed");
-        redraw = false;
-    }
+   // }
     if (active != undefined) { 
         console.log(ac, ar);
         drawPiece(ac, ar);
     }
 }
 
-setInterval(display, 500);
+setInterval(display, 10);
