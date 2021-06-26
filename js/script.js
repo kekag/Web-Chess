@@ -356,19 +356,14 @@ var active, promotion;
 var down, drag, pos;
 
 function setPosition(e) {
-    var x = e.clientX - canvas.offsetLeft;
-    var y = e.clientY - canvas.offsetTop;
-    pos = [x, y];
+    // (x, y) position relative to canvas
+    pos = [e.clientX-canvas.offsetLeft, e.clientY-canvas.offsetTop];
 }
 
 function getSquare(e) {
     setPosition(e)
-    var x = pos[0];
-    var y = pos[1];
-    if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
-        var c = Math.floor(x / s);
-        var r = Math.floor(y / s);
-        return board[c][r];
+    if (pos[0] >= 0 && pos[1] >= 0 && pos[0] < canvas.width && pos[1] < canvas.height) {
+        return board[Math.floor(pos[0]/s)][Math.floor(pos[1]/s)];
     }
     return undefined;
 }
@@ -507,8 +502,11 @@ document.addEventListener('mousemove', e => {
 /* Render board and pieces */
 //
 
+var background = document.getElementById("board");
+var bgctx = background.getContext("2d");
+
 // Draw individual squares
-ctx.font = `${s/6}px sans-serif`;
+bgctx.font = `${s/6}px sans-serif`;
 var [light, dark] = ["#B9B9B9", "#3D3D3D"];
 var squareColor, textColor;
 for (var c = 0; c < 8; c++) {
@@ -521,34 +519,33 @@ for (var c = 0; c < 8; c++) {
         squareColor == light ? textColor = dark : textColor = light;
 
         // Draw filled tile
-        ctx.beginPath();
-        ctx.rect(c*s, r*s, s, s);
-        ctx.fillStyle = squareColor;
-        ctx.fill();
-        ctx.closePath();
+        bgctx.beginPath();
+        bgctx.rect(c*s, r*s, s, s);
+        bgctx.fillStyle = squareColor;
+        bgctx.fill();
+        bgctx.closePath();
 
         // Draw column and row letters and digits
-        ctx.strokeStyle = textColor;
+        bgctx.strokeStyle = textColor;
         if (r == 7) {
-            ctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
+            bgctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
         }
         if (c == 0) {
-            ctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
+            bgctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
         }
     }
 }
-var background = ctx.getImageData(0, 0, canvas.width, canvas.height)
 
 function highlightSquare(c, r, glow, color) {
-    var alpha = 0.7;
+    var alpha = 0.70;
     var fade;
     for (var i = 1; i < s/2; i++) { 
         fade = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
-        ctx.beginPath();
-        ctx.rect(c*s+i, r*s+i, s-i*2, s-i*2);
-        ctx.strokeStyle = fade;
-        ctx.stroke();
-        ctx.closePath();
+        bgctx.beginPath();
+        bgctx.rect(c*s+i, r*s+i, s-i*2, s-i*2);
+        bgctx.strokeStyle = fade;
+        bgctx.stroke();
+        bgctx.closePath();
         alpha -= glow;
     }
 }
@@ -570,26 +567,35 @@ function drawPiece(c, r) {
     ctx.drawImage(img, x, y, s, s);
 }
 
-function display() {
-    ctx.putImageData(background, 0, 0);
+var rehighlight, redraw = true;
+var ac, ar;
 
-    var ac, ar;
-    if (active != undefined) {
+function display() {
+    if (active != undefined && rehighlight) {
         highlightSquare(active.col, active.row, 0.015, [255, 255, 255]);
         for (const m of active.moves()) {
             highlightSquare(m[0], m[1], 0.015, [18, 246, 146]);
         }
         ac = active.col;
         ar = active.row;
+        console.log("rehighlighted");
+        rehighlight = false;
     }
-    for (var c = 0; c < 8; c++) {
-        for (var r = 0; r < 8; r++) {
-            if (c != ac || r != ar) {
-                drawPiece(c, r);
+    if (!drag || redraw) {
+        for (var c = 0; c < 8; c++) {
+            for (var r = 0; r < 8; r++) {
+                if (c != ac || r != ar) {
+                    drawPiece(c, r);
+                }
             }
         }
+        console.log("redrawed");
+        redraw = false;
     }
-    if (active != undefined) drawPiece(ac, ar);
+    if (active != undefined) { 
+        console.log(ac, ar);
+        drawPiece(ac, ar);
+    }
 }
 
-setInterval(display, 7);
+setInterval(display, 500);
