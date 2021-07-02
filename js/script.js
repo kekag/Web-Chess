@@ -497,6 +497,7 @@ document.addEventListener('mousedown', e => {
 document.addEventListener('mousemove', e => {
     if (down && active != undefined && getSquare(e) == active) {
         drag = true;
+        redraw = true;
         setPosition(e);
     }
 });
@@ -586,7 +587,10 @@ function display() {
         console.log("Highlight");
     }
     if (load || (!drag && redraw)) {
-        if (!load) ctx.putImageData(pieceCanvasImg, 0, 0);
+        if (!load) {
+            console.log("clearing");
+            ctx.clearRect(0, 0, b, b); // ctx.putImageData(pieceCanvasImg, 0, 0);
+        }
         for (var c = 0; c < 8; c++) {
             for (var r = 0; r < 8; r++) {
                 if (c != ac || r != ar) {
@@ -594,7 +598,7 @@ function display() {
                 }
             }
         }
-        pieceCanvasImg = ctx.getImageData(0, 0, b, b);
+       // pieceCanvasImg = ctx.getImageData(0, 0, b, b);
         if (load) {
             drawBoard();
             load = false;
