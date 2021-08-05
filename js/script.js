@@ -206,8 +206,8 @@ function kingMoves() {
 /* Initialize canvas and board variables */
 //
 
-// Define piece enumerations
-// *The aliased functions are EXCLUSIVELY used in the context Square object, I'm only defining it here to avoid needing a switch statement later
+// Define piece enums
+// ** The aliased functions are only used in the Square object **
 const piece = {
     PAWN: {
         value: "P",
@@ -255,7 +255,7 @@ const team = {
     }
 }
 
-// Use cols/rows as a map/dictionary, fill out ranks
+// Use cols/rows as a map, fill out ranks
 const cols = {};
 const rows = {}; 
 for (let i = 0; i < 8; i++) {
@@ -292,13 +292,15 @@ function Square(piece, team, col, row, special) {
     }
 } 
 
-var boardCanvas = document.getElementById("board");
+var boardCanvas = document.getElementById("board"); 
+var highlightCanvas = document.getElementById("highlight")
 var pieceCanvas = document.getElementById("piece");
 var bctx = boardCanvas.getContext("2d");
+var hctx = highlightCanvas.getContext("2d");
 var ctx = pieceCanvas.getContext("2d");
 
 var b = boardCanvas.width;
-var s = boardCanvas.width / 8;
+var s = b / 8;
 var turn = team.WHITE;
 
 // INITIALIZE PIECES AND BOARD
@@ -308,7 +310,7 @@ var turn = team.WHITE;
 for (var c = 0; c < 8; c++) {
     for (var r = 0; r < 8; r++) {
         // Determine starting position for respective [c][r] square
-        var p, t, u, special;
+        var p, t, u;
         if (r > 5) {
             t = team.WHITE;
         } else if (r < 2) {
@@ -320,7 +322,7 @@ for (var c = 0; c < 8; c++) {
         } else if (r == 0 || r == 7) { // Major pieces (first rank)
             if (c == 0 || c == 7) {
                 p = piece.ROOK;
-                special = true; // if moved make false, castling no longer possible for rook's side
+                u = true; // if moved make false, castling no longer possible for rook's side
             } else if (c == 1 || c == 6) {
                 p = piece.KNIGHT;
             } else if (c == 2 || c == 5) {
@@ -329,15 +331,36 @@ for (var c = 0; c < 8; c++) {
                 p = piece.QUEEN;
             } else { // c == 4
                 p = piece.KING;
-                special = true; // if moved make false, castling no longer possible
+                u = true; // if moved make false, castling no longer possible
             }
         } else {
             p = piece.BLANK;
             t = undefined;
-            special = undefined;
+            u = undefined;
         }
 
-        var square = new Square(p, t, c, r, special);
+        if (p != piece.BLANK) {
+            console.log(c)
+            console.log(r)
+            console.log(t)
+            console.log(p)
+            var img = new Image(s, s);
+            img.src = `graphics/${t}${p}.svg`
+            console.log("ha")
+
+            var x, y;
+            if (drag && board[c][r] == active) {
+                x = pos[0] - s/2;
+                y = pos[1] - s/2;
+            } else {
+                x = c*s;
+                y = r*s;
+            }
+
+            img.onload = function() { ctx.drawImage(img, x, y, s, s); };
+        }
+
+        var square = new Square(p, t, c, r, u);
         board[c][r] = square;
     }
 }
@@ -399,8 +422,8 @@ function activatePiece(temp) {
                 }
             }
         }
-        rehighlight = true;
         active = temp;
+        rehighlight = true;
     }
 }
 
@@ -409,7 +432,6 @@ function movePiece(temp) {
         for (const m of active.moves()) {
             if (m[0] == temp.col && m[1] == temp.row) {
                 drag = false;
-                var standard = true;
                 // Update case status and handle special cases
                 if (active.case != undefined) {
                     switch(active.piece) {
@@ -496,8 +518,7 @@ document.addEventListener('mousedown', e => {
   
 document.addEventListener('mousemove', e => {
     if (down && active != undefined && getSquare(e) == active) {
-        drag = true;
-        redraw = true;
+        drag = redraw = true;
         setPosition(e);
     }
 });
@@ -506,52 +527,57 @@ document.addEventListener('mousemove', e => {
 /* Render board and pieces */
 //
 
-var load, rehighlight, redraw, ac, ar, boardCanvasImg, pieceCanvasImg;
+var load, rehighlight, redraw, ac, ar, pieceCanvasImg;
 load = rehighlight = redraw = true;
 
-function drawBoard() {
-    bctx.font = `${s/6}px sans-serif`;
-    var [light, dark] = ["#B9B9B9", "#3D3D3D"];
-    var squareColor, textColor;
-    for (var c = 0; c < 8; c++) {
-        for (var r = 0; r < 8; r++) {
-            if (c % 2 == 0) {
-                r % 2 == 0 ? squareColor = light : squareColor = dark;
-            } else {
-                r % 2 == 0 ? squareColor = dark : squareColor = light;
-            }
-            squareColor == light ? textColor = dark : textColor = light;
+// Draw board
+bctx.font = `${s/6}px sans-serif`;
+var [light, dark] = ["#B9B9B9", "#3D3D3D"];
+var squareColor, textColor;
+for (var c = 0; c < 8; c++) {
+    for (var r = 0; r < 8; r++) {
+        if (c % 2 == 0) {
+            r % 2 == 0 ? squareColor = light : squareColor = dark;
+        } else {
+            r % 2 == 0 ? squareColor = dark : squareColor = light;
+        }
+        squareColor == light ? textColor = dark : textColor = light;
 
-            // Draw filled tile
-            bctx.beginPath();
-            bctx.rect(c*s, r*s, s, s);
-            bctx.fillStyle = squareColor;
-            bctx.fill();
-            bctx.closePath();
+        // Draw filled tile
+        bctx.beginPath();
+        bctx.rect(c*s, r*s, s, s);
+        bctx.fillStyle = squareColor;
+        bctx.fill();
+        bctx.closePath();
 
-            // Draw column and row letters and digits
-            bctx.strokeStyle = textColor;
-            if (r == 7) {
-                bctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
-            }
-            if (c == 0) {
-                bctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
-            }
+        // Draw column and row letters and digits
+        bctx.strokeStyle = textColor;
+        if (r == 7) {
+            bctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
+        }
+        if (c == 0) {
+            bctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
         }
     }
-    boardCanvasImg = bctx.getImageData(0, 0, b, b);
+}
+
+// Draw pieces
+for (var c = 0; c < 8; c++) {
+    for (var r = 0; r < 8; r++) {
+     //   drawPiece(c, r);
+    }
 }
 
 function highlightSquare(c, r, glow, color) {
-    var alpha = 0.70;
-    var fade;
+    var fade, alpha;
+    alpha = 0.70;
     for (var i = 1; i < s/2; i++) { 
         fade = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
-        bctx.beginPath();
-        bctx.rect(c*s+i, r*s+i, s-i*2, s-i*2);
-        bctx.strokeStyle = fade;
-        bctx.stroke();
-        bctx.closePath();
+        hctx.beginPath();
+        hctx.rect(c*s+i, r*s+i, s-i*2, s-i*2);
+        hctx.strokeStyle = fade;
+        hctx.stroke();
+        hctx.closePath();
         alpha -= glow;
     }
 }
@@ -575,8 +601,9 @@ function drawPiece(c, r) {
 }
 
 function display() {
-    if (active != undefined && rehighlight) {
-        bctx.putImageData(boardCanvasImg, 0, 0);
+    if (rehighlight && active != undefined) {
+        console.log(active)
+        hctx.clearRect(0, 0, b, b)
         highlightSquare(active.col, active.row, 0.015, [255, 255, 255]);
         for (const m of active.moves()) {
             highlightSquare(m[0], m[1], 0.015, [18, 246, 146]);
@@ -584,30 +611,17 @@ function display() {
         ac = active.col;
         ar = active.row;
         rehighlight = false;
-        console.log("Highlight");
     }
-    if (load || (!drag && redraw)) {
-        if (!load) {
-            console.log("clearing");
-            ctx.clearRect(0, 0, b, b); // ctx.putImageData(pieceCanvasImg, 0, 0);
-        }
+    if (redraw) {
         for (var c = 0; c < 8; c++) {
             for (var r = 0; r < 8; r++) {
-                if (c != ac || r != ar) {
-                    drawPiece(c, r);
-                }
+              //  drawPiece(c, r);
             }
         }
-       // pieceCanvasImg = ctx.getImageData(0, 0, b, b);
-        if (load) {
-            drawBoard();
-            load = false;
-        }
         redraw = false;
-        console.log("Draw piece");
     }
     if (active != undefined) { 
-        drawPiece(ac, ar);
+      //  drawPiece(ac, ar);
     }
 }
 
