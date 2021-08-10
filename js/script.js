@@ -1,246 +1,232 @@
 //
+/* Helpers */
+//
+
+function inBounds(c, r) {
+    if (c >= 0 && c < 8 && r >= 0 && r < 8) { 
+        return true;
+    }
+    return false;
+}
+
+//
 /* Piece logic */
 // 
 
+// Define piece enums
 // Threats should be irrespective of piece/team and not account for pins/checks, moves however should
-function pawnThreats() {
-    const threats = new Array();
-    if (this.col - 1 >= 0) {
-        threats.push([this.col - 1, this.row + this.team.dir]);
-    }
-    if (this.col + 1 < 8) {
-        threats.push([this.col + 1, this.row + this.team.dir]);
-    }
-    return threats;
-}
-
-function pawnMoves() {
-    const moves = new Array();
-    var t, s;
-    t = this.col;
-    s = this.row + this.team.dir;
-    for (const p of this.threats()) {
-        if ((board[p[0]][p[1]].piece != piece.BLANK && board[p[0]][p[1]].team != this.team) || (board[p[0]][p[1]].piece == piece.BLANK && board[p[0]][this.row].case)) {
-            moves.push(p);
-        }
-    }
-    if (board[t][s].piece == piece.BLANK) {
-        moves.push([t, s]);
-        if (this.row == this.team.rank[1] && board[t][s + this.team.dir].piece == piece.BLANK) {
-            moves.push([t, s + this.team.dir]);
-        }
-    }
-    return moves;
-}
-
-function knightThreats() {
-    const threats = new Array();
-    var i, j, t, s;
-    for (i = -2; i <= 2; i++) {
-        for (j = -2; j <= 2; j++) {
-            t = this.col+i;
-            s = this.row+j;
-            if (Math.abs(i)+Math.abs(j) == 3 && t >= 0 && t < 8 && s >= 0 && s < 8 && board[t][s].team != this.team) {
-                threats.push([t, s]);
+const piece = {
+    PAWN: {
+        value: "P",
+        threats: function() {
+            const threats = new Array();
+            if (this.col - 1 >= 0) {
+                threats.push([this.col - 1, this.row + this.team.dir]);
             }
-        }
-    }
-    return threats;
-}
-
-function knightMoves() {
-    return this.threats();
-}
-
-function bishopThreats() {
-    const threats = new Array();
-    var i, j, t, s, edge;
-    for (i = 0; i < 4; i++) {
-        i < 2 ? edge = this.col : edge = 8 - this.col;
-        for (j = 1; j <= edge; j++) {
-            i < 2 ? t = this.col - j : t = this.col + j;
-            i == 1 || i == 2 ? s = this.row + j : s = this.row - j;
-            if (t < 0 || s < 0 || t >= 8 || s >= 8) break;
-            if (board[t][s].piece == piece.BLANK) {
-                threats.push([t, s]);
-            } else if (board[t][s].team != this.team) {
-                threats.push([t, s]);
-                break;
-            } else {
-                break;
+            if (this.col + 1 < 8) {
+                threats.push([this.col + 1, this.row + this.team.dir]);
             }
-        }
-    }
-    return threats;
-}
-
-function bishopMoves() {
-    return this.threats();
-}
-
-function rookThreats() {
-    const threats = new Array();
-    var i, j, t, s, edge;
-    for (var i = 0; i < 4; i++) {
-        if (i % 2 == 0) {
-            i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
-        } else {
-            i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
-        }
-        for (var j = 1; j < edge; j++) {
-            if (i % 2 == 0) {
-                i < 2 ? t = this.col - j : t = this.col + j;
-                s = this.row
-            } else {
-                t = this.col;
-                i < 2 ? s = this.row - j : s = this.row + j;
+            return threats;
+        },
+        moves: function() {
+            const moves = new Array();
+            var t, s;
+            t = this.col;
+            s = this.row + this.team.dir;
+            for (const p of this.threats()) {
+                if ((board[p[0]][p[1]].piece != piece.BLANK && board[p[0]][p[1]].team != this.team) || (board[p[0]][p[1]].piece == piece.BLANK && board[p[0]][this.row].case)) {
+                    moves.push(p);
+                }
             }
             if (board[t][s].piece == piece.BLANK) {
                 moves.push([t, s]);
-            } else if (board[t][s].team != this.team) {
-                moves.push([t, s]);
-                break;
-            } else {
-                break;
+                if (this.row == this.team.rank[1] && board[t][s + this.team.dir].piece == piece.BLANK) {
+                    moves.push([t, s + this.team.dir]);
+                }
             }
-        }
-    }
-    return threats;
-}
-
-function rookMoves() {
-    return this.threats();
-}
-
-function queenThreats() {
-    const threats = new Array();
-    var i, j, t, s, edge;
-    for (var i = 0; i < 8; i++) {
-        if (i < 4) {
-            if (i % 2 == 0) {
-                i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
-            } else {
-                i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
+            return moves;
+        },
+    },
+    KNIGHT: {
+        value: "N",
+        threats: function() {
+            const threats = new Array();
+            var i, j, t, s;
+            for (i = -2; i <= 2; i++) {
+                for (j = -2; j <= 2; j++) {
+                    t = this.col+i;
+                    s = this.row+j;
+                    if (Math.abs(i)+Math.abs(j) == 3 && board[t][s].team != this.team && inBounds(t, s)) {
+                        threats.push([t, s]);
+                    }
+                }
             }
-        } else {
-            i < 6 ? edge = this.col + 1 : edge = 8 - this.col + 1;
-        }
-        for (var j = 1; j < edge; j++) {
-            if (i < 4) {
-                if (i % 2 == 0) {
+            return threats;
+        },
+        moves: function() {
+            return this.threats();
+        },
+    },
+    BISHOP: {
+        value: "B",
+        threats: function() {
+            const threats = new Array();
+            var i, j, t, s, edge;
+            for (i = 0; i < 4; i++) {
+                i < 2 ? edge = this.col : edge = 8 - this.col;
+                for (j = 1; j <= edge; j++) {
                     i < 2 ? t = this.col - j : t = this.col + j;
-                    s = this.row
+                    i == 1 || i == 2 ? s = this.row + j : s = this.row - j;
+                    if (!inBounds(t, s)) break;
+                    if (board[t][s].piece == piece.BLANK) {
+                        threats.push([t, s]);
+                    } else if (board[t][s].team != this.team) {
+                        threats.push([t, s]);
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        },
+        moves: function() {
+            return this.threats();
+        },
+    },
+    ROOK:   {
+        value: "R",
+        threats: function() {
+            const threats = new Array();
+            var i, j, t, s, edge;
+            for (i = 0; i < 4; i++) {
+                if (i % 2 == 0) {
+                    i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
                 } else {
-                    t = this.col;
-                    i < 2 ? s = this.row - j : s = this.row + j;
+                    i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
                 }
-            } else {
-                i < 6 ? t = this.col - j : t = this.col + j;
-                i == 5 || i == 6 ? s = this.row + j : s = this.row - j;
-            }
-            if (t < 0 || s < 0 || t >= 8 || s >= 8) break;
-            if (board[t][s].piece == piece.BLANK) {
-                threats.push([t, s]);
-            } else if (board[t][s].team != this.team) {
-                threats.push([t, s]);
-                break;
-            } else {
-                break;
-            }
-        }
-    }
-    return threats;
-}
-
-function queenMoves() {
-    return this.threats();
-}
-
-function kingThreats() {
-    const threats = new Array();
-    var i, j, t, s;
-    for (i = -1; i <= 1; i++) {
-        for (j = -1; j <= 1; j++) {
-            t = this.col+i;
-            s = this.row+j;
-            if (t >= 0 && t < 8 && s >= 0 && s < 8) {
-                threats.push([t, s]);
-            }
-        }
-    }
-    return threats;
-}
-
-function kingMoves() {
-    const moves = new Array();
-    for (const p of this.threats()) {
-        if (board[p[0]][p[1]].team != this.team) {
-            moves.push(p);
-        }
-    }
-    var r = this.team.rank[0]; // Castling
-    if (this.case && this.col == 4 && this.row == r) {
-        if (board[7][r].piece == piece.ROOK && board[7][r].case) { // King side
-            var gap = true;
-            for (var i = this.col + 1; i < 7; i++) {
-                if (board[i][r].piece != piece.BLANK) {
-                    gap = false;
+                for (j = 1; j < edge; j++) {
+                    if (i % 2 == 0) {
+                        i < 2 ? t = this.col - j : t = this.col + j;
+                        s = this.row
+                    } else {
+                        t = this.col;
+                        i < 2 ? s = this.row - j : s = this.row + j;
+                    }
+                    if (board[t][s].piece == piece.BLANK) {
+                        threats.push([t, s]);
+                    } else if (board[t][s].team != this.team) {
+                        threats.push([t, s]);
+                        break;
+                    } else {
+                        break;
+                    }
                 }
             }
-            if (gap) moves.push([7, r]);
-        }
-        if (board[0][r].piece == piece.ROOK && board[0][r].case) { // Queen side
-            var gap = true;
-            for (var i = this.col - 1; i > 0; i--) {
-                if (board[i][r].piece != piece.BLANK) {
-                    gap = false;
+            return threats;
+        },
+        moves: function() {
+            return this.threats();
+        },
+    },
+    QUEEN:  {
+        value: "Q",
+        threats: function() {
+            const threats = new Array();
+            var i, j, t, s, edge;
+            for (i = 0; i < 8; i++) {
+                if (i < 4) {
+                    if (i % 2 == 0) {
+                        i < 2 ? edge = this.col + 1 : edge = 8 - this.col;
+                    } else {
+                        i < 2 ? edge = this.row + 1 : edge = 8 - this.row;
+                    }
+                } else {
+                    i < 6 ? edge = this.col + 1 : edge = 8 - this.col + 1;
+                }
+                for (j = 1; j < edge; j++) {
+                    if (i < 4) {
+                        if (i % 2 == 0) {
+                            i < 2 ? t = this.col - j : t = this.col + j;
+                            s = this.row
+                        } else {
+                            t = this.col;
+                            i < 2 ? s = this.row - j : s = this.row + j;
+                        }
+                    } else {
+                        i < 6 ? t = this.col - j : t = this.col + j;
+                        i == 5 || i == 6 ? s = this.row + j : s = this.row - j;
+                    }
+                    if (!inBounds(t, s)) break;
+                    if (board[t][s].piece == piece.BLANK) {
+                        threats.push([t, s]);
+                    } else if (board[t][s].team != this.team) {
+                        threats.push([t, s]);
+                        break;
+                    } else {
+                        break;
+                    }
                 }
             }
-            if (gap) moves.push([0, r]);
-        }
-    }
-    return moves;
+            return threats;
+        },
+        moves: function() {
+            return this.threats();
+        },
+    },
+    KING:   {
+        value: "K",
+        threats: function() {
+            const threats = new Array();
+            var i, j, t, s;
+            for (i = -1; i <= 1; i++) {
+                for (j = -1; j <= 1; j++) {
+                    t = this.col+i;
+                    s = this.row+j;
+                    if (inBounds(t, s)) {
+                        threats.push([t, s]);
+                    }
+                }
+            }
+            return threats;
+        },
+        moves: function() {
+            const moves = new Array();
+            var i, r;
+            for (const p of this.threats()) {
+                if (board[p[0]][p[1]].team != this.team) {
+                    moves.push(p);
+                }
+            }
+            r = this.team.rank[0]; // Castling
+            if (this.case && this.col == 4 && this.row == r) {
+                if (board[7][r].piece == piece.ROOK && board[7][r].case) { // King side
+                    var gap = true;
+                    for (i = this.col + 1; i < 7; i++) {
+                        if (board[i][r].piece != piece.BLANK) {
+                            gap = false;
+                        }
+                    }
+                    if (gap) moves.push([7, r]);
+                }
+                if (board[0][r].piece == piece.ROOK && board[0][r].case) { // Queen side
+                    var gap = true;
+                    for (i = this.col - 1; i > 0; i--) {
+                        if (board[i][r].piece != piece.BLANK) {
+                            gap = false;
+                        }
+                    }
+                    if (gap) moves.push([0, r]);
+                }
+            }
+            return moves;
+        },
+    },
+    BLANK:  "",
 }
 
 //
 /* Initialize canvas and board variables */
 //
-
-// Define piece enums
-// ** The aliased functions are only used in the Square object **
-const piece = {
-    PAWN: {
-        value: "P",
-        threats: pawnThreats,
-        moves: pawnMoves
-    },
-    KNIGHT: {
-        value: "N",
-        threats: knightThreats,
-        moves: knightMoves
-    },
-    BISHOP: {
-        value: "B",
-        threats: bishopThreats,
-        moves: bishopMoves
-    },
-    ROOK:   {
-        value: "R",
-        threats: rookThreats,
-        moves: rookMoves
-    },
-    QUEEN:  {
-        value: "Q",
-        threats: queenThreats,
-        moves: queenMoves
-    },
-    KING:   {
-        value: "K",
-        threats: kingThreats,
-        moves: kingMoves
-    },
-    BLANK:  "",
-}
 
 const team = {
     WHITE: {
@@ -254,6 +240,8 @@ const team = {
         dir: 1
     }
 }
+Object.freeze(piece);
+Object.freeze(team);
 
 // Use cols/rows as a map, fill out ranks
 const cols = {};
@@ -266,8 +254,6 @@ for (let i = 0; i < 8; i++) {
 }
 Object.freeze(cols);
 Object.freeze(rows);
-Object.freeze(piece);
-Object.freeze(team);
 
 // Create board as 2D-arrary
 const board = new Array(8);
@@ -281,14 +267,9 @@ function Square(piece, team, col, row, special) {
     this.col = col;
     this.row = row;
     this.case = special;
-    this.threats = piece.threats;
-    this.moves = piece.moves;
     this.clear = function() {
         this.piece = "";
-        this.team = undefined;
-        this.case = undefined;
-        this.threats = undefined;
-        this.moves = undefined;
+        this.team = this.case = this.threats = this.moves = undefined;
     }
 } 
 
@@ -310,7 +291,7 @@ var turn = team.WHITE;
 for (var c = 0; c < 8; c++) {
     for (var r = 0; r < 8; r++) {
         // Determine starting position for respective [c][r] square
-        var p, t, u;
+        var p, t, sc;
         if (r > 5) {
             t = team.WHITE;
         } else if (r < 2) {
@@ -318,11 +299,11 @@ for (var c = 0; c < 8; c++) {
         }
         if (r == 1 || r == 6) { // Minor pieces (second rank)
             p = piece.PAWN;
-            special = false; // iff moved to 4th rank in one move make true, en passant applies
+            sc = false; // iff moved to 4th rank in one move make true, en passant applies
         } else if (r == 0 || r == 7) { // Major pieces (first rank)
             if (c == 0 || c == 7) {
                 p = piece.ROOK;
-                u = true; // if moved make false, castling no longer possible for rook's side
+                sc = true; // if moved make false, castling no longer possible for rook's side
             } else if (c == 1 || c == 6) {
                 p = piece.KNIGHT;
             } else if (c == 2 || c == 5) {
@@ -331,12 +312,11 @@ for (var c = 0; c < 8; c++) {
                 p = piece.QUEEN;
             } else { // c == 4
                 p = piece.KING;
-                u = true; // if moved make false, castling no longer possible
+                sc = true; // if moved make false, castling no longer possible
             }
         } else {
             p = piece.BLANK;
-            t = undefined;
-            u = undefined;
+            t = sc = undefined;
         }
 
         if (p != piece.BLANK) {
@@ -360,7 +340,7 @@ for (var c = 0; c < 8; c++) {
             img.onload = function() { ctx.drawImage(img, x, y, s, s); };
         }
 
-        var square = new Square(p, t, c, r, u);
+        var square = new Square(p, t, c, r, sc);
         board[c][r] = square;
     }
 }
@@ -377,6 +357,7 @@ ctx.closePath();
 //
 
 var active, promotion, down, drag, pos;
+var possible, temp;
 var audio = new Audio("audio/move.wav");
 audio.volume = 0.225;
 
