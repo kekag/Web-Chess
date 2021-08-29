@@ -278,7 +278,7 @@ var highlightCanvas = document.getElementById("highlight")
 var pieceCanvas = document.getElementById("piece");
 var bctx = boardCanvas.getContext("2d");
 var hctx = highlightCanvas.getContext("2d");
-var ctx = pieceCanvas.getContext("2d");
+var pctx = pieceCanvas.getContext("2d");
 
 var b = boardCanvas.width;
 var s = b / 8;
@@ -320,13 +320,8 @@ for (var c = 0; c < 8; c++) {
         }
 
         if (p != piece.BLANK) {
-            console.log(c)
-            console.log(r)
-            console.log(t)
-            console.log(p)
             var img = new Image(s, s);
-            img.src = `graphics/${t}${p}.svg`
-            console.log("ha")
+            img.src = `graphics/${t.value}${p.value}.svg`;
 
             var x, y;
             if (drag && board[c][r] == active) {
@@ -337,7 +332,10 @@ for (var c = 0; c < 8; c++) {
                 y = r*s;
             }
 
-            img.onload = function() { ctx.drawImage(img, x, y, s, s); };
+            img.onload = function() {
+                console.log(`${t.value}${p.value}`)
+                pctx.drawImage(img, x, y, s, s);
+            };
         }
 
         var square = new Square(p, t, c, r, sc);
@@ -346,11 +344,11 @@ for (var c = 0; c < 8; c++) {
 }
 
 // Draw border around board
-ctx.beginPath();
-ctx.rect(0, 0, b, b);
-ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-ctx.stroke();
-ctx.closePath();
+pctx.beginPath();
+pctx.rect(0, 0, b, b);
+pctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+pctx.stroke();
+pctx.closePath();
 
 //
 /* Manage mouse events and moves */
@@ -578,7 +576,9 @@ function drawPiece(c, r) {
         y = r*s;
     }
 
-    img.onload = function() { ctx.drawImage(img, x, y, s, s); };
+    img.onload = function() { 
+        pctx.drawImage(img, x, y, s, s);
+    };
 }
 
 function display() {
@@ -592,17 +592,6 @@ function display() {
         ac = active.col;
         ar = active.row;
         rehighlight = false;
-    }
-    if (redraw) {
-        for (var c = 0; c < 8; c++) {
-            for (var r = 0; r < 8; r++) {
-              //  drawPiece(c, r);
-            }
-        }
-        redraw = false;
-    }
-    if (active != undefined) { 
-      //  drawPiece(ac, ar);
     }
 }
 
