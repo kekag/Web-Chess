@@ -1,13 +1,13 @@
-# Web Chess
+# Web Chess **(WIP)**
 
-Made using basic javascript
+Made with pure javascript
 
-### Implementation check-list
+### TODOs
 
-- [ ] Check logic (checks, mates, pins, W/L)
-- [x] Castling
-- [ ] Pawn promotion
 - [x] En passant
+- [x] Castling
+- [ ] Check logic (checks, mates, pins, W/L)
+- [ ] Pawn promotion
 
 ### Used resources
 
