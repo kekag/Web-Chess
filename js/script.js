@@ -3,7 +3,7 @@
 //
 
 function inBounds(c, r) {
-    if (c >= 0 && c < 8 && r >= 0 && r < 8) { 
+    if (c >= 0 && c < 8 && r >= 0 && r < 8) {
         return true;
     }
     return false;
@@ -18,7 +18,7 @@ function inBounds(c, r) {
 const piece = {
     PAWN: {
         value: "P",
-        threats: function() {
+        threats: function () {
             const threats = new Array();
             if (this.col - 1 >= 0) {
                 threats.push([this.col - 1, this.row + this.team.dir]);
@@ -28,7 +28,7 @@ const piece = {
             }
             return threats;
         },
-        moves: function() {
+        moves: function () {
             const moves = new Array();
             var t, s;
             t = this.col;
@@ -49,27 +49,27 @@ const piece = {
     },
     KNIGHT: {
         value: "N",
-        threats: function() {
+        threats: function () {
             const threats = new Array();
             var i, j, t, s;
             for (i = -2; i <= 2; i++) {
                 for (j = -2; j <= 2; j++) {
-                    t = this.col+i;
-                    s = this.row+j;
-                    if (Math.abs(i)+Math.abs(j) == 3 && board[t][s].team != this.team && inBounds(t, s)) {
+                    t = this.col + i;
+                    s = this.row + j;
+                    if (Math.abs(i) + Math.abs(j) == 3 && board[t][s].team != this.team && inBounds(t, s)) {
                         threats.push([t, s]);
                     }
                 }
             }
             return threats;
         },
-        moves: function() {
+        moves: function () {
             return this.threats();
         },
     },
     BISHOP: {
         value: "B",
-        threats: function() {
+        threats: function () {
             const threats = new Array();
             var i, j, t, s, edge;
             for (i = 0; i < 4; i++) {
@@ -89,13 +89,13 @@ const piece = {
                 }
             }
         },
-        moves: function() {
+        moves: function () {
             return this.threats();
         },
     },
-    ROOK:   {
+    ROOK: {
         value: "R",
-        threats: function() {
+        threats: function () {
             const threats = new Array();
             var i, j, t, s, edge;
             for (i = 0; i < 4; i++) {
@@ -124,13 +124,13 @@ const piece = {
             }
             return threats;
         },
-        moves: function() {
+        moves: function () {
             return this.threats();
         },
     },
-    QUEEN:  {
+    QUEEN: {
         value: "Q",
-        threats: function() {
+        threats: function () {
             const threats = new Array();
             var i, j, t, s, edge;
             for (i = 0; i < 8; i++) {
@@ -169,19 +169,19 @@ const piece = {
             }
             return threats;
         },
-        moves: function() {
+        moves: function () {
             return this.threats();
         },
     },
-    KING:   {
+    KING: {
         value: "K",
-        threats: function() {
+        threats: function () {
             const threats = new Array();
             var i, j, t, s;
             for (i = -1; i <= 1; i++) {
                 for (j = -1; j <= 1; j++) {
-                    t = this.col+i;
-                    s = this.row+j;
+                    t = this.col + i;
+                    s = this.row + j;
                     if (inBounds(t, s)) {
                         threats.push([t, s]);
                     }
@@ -189,7 +189,7 @@ const piece = {
             }
             return threats;
         },
-        moves: function() {
+        moves: function () {
             const moves = new Array();
             var i, r;
             for (const p of this.threats()) {
@@ -221,7 +221,7 @@ const piece = {
             return moves;
         },
     },
-    BLANK:  "",
+    BLANK: "",
 }
 
 //
@@ -233,7 +233,7 @@ const team = {
         value: "w",
         rank: new Array(8),
         dir: -1
-    }, 
+    },
     BLACK: {
         value: "b",
         rank: new Array(8),
@@ -245,7 +245,7 @@ Object.freeze(team);
 
 // Use cols/rows as a map, fill out ranks
 const cols = {};
-const rows = {}; 
+const rows = {};
 for (let i = 0; i < 8; i++) {
     cols[i] = String.fromCharCode(97 + i);
     rows[i] = -(i - 8);
@@ -267,13 +267,13 @@ function Square(piece, team, col, row, special) {
     this.col = col;
     this.row = row;
     this.case = special;
-    this.clear = function() {
+    this.clear = function () {
         this.piece = "";
         this.team = this.case = this.threats = this.moves = undefined;
     }
-} 
+}
 
-var boardCanvas = document.getElementById("board"); 
+var boardCanvas = document.getElementById("board");
 var highlightCanvas = document.getElementById("highlight")
 var pieceCanvas = document.getElementById("piece");
 var bctx = boardCanvas.getContext("2d");
@@ -325,14 +325,14 @@ for (var c = 0; c < 8; c++) {
 
             var x, y;
             if (drag && board[c][r] == active) {
-                x = pos[0] - s/2;
-                y = pos[1] - s/2;
+                x = pos[0] - s / 2;
+                y = pos[1] - s / 2;
             } else {
-                x = c*s;
-                y = r*s;
+                x = c * s;
+                y = r * s;
             }
 
-            img.onload = function() {
+            img.onload = function () {
                 console.log(`${t.value}${p.value}`)
                 pctx.drawImage(img, x, y, s, s);
             };
@@ -367,7 +367,7 @@ function setPosition(e) {
 function getSquare(e) {
     setPosition(e)
     if (pos[0] >= 0 && pos[1] >= 0 && pos[0] < b && pos[1] < b) {
-        return board[Math.floor(pos[0]/s)][Math.floor(pos[1]/s)];
+        return board[Math.floor(pos[0] / s)][Math.floor(pos[1] / s)];
     }
     return undefined;
 }
@@ -407,13 +407,13 @@ function activatePiece(temp) {
 }
 
 function movePiece(temp) {
-    if (active != temp && active != undefined) { 
+    if (active != temp && active != undefined) {
         for (const m of active.moves()) {
             if (m[0] == temp.col && m[1] == temp.row) {
                 drag = false;
                 // Update case status and handle special cases
                 if (active.case != undefined) {
-                    switch(active.piece) {
+                    switch (active.piece) {
                         case piece.PAWN:
                             var l, r = false;
                             if (active.col - 1 >= 0) {
@@ -422,7 +422,7 @@ function movePiece(temp) {
                             if (active.col + 1 < 8) {
                                 r = board[active.col + 1][temp.row].piece == piece.PAWN;
                             }
-                            if (temp.row-active.row == (turn.dir * 2) && (l || r)) {
+                            if (temp.row - active.row == (turn.dir * 2) && (l || r)) {
                                 active.case = true;
                             } else { // condition was met before but no longer should
                                 active.case = false;
@@ -461,7 +461,7 @@ function movePiece(temp) {
                             break;
                     }
                 }
-                
+
                 copyClear(active, temp.col, temp.row, true);
                 endTurn();
                 break;
@@ -481,7 +481,7 @@ document.addEventListener("click", e => {
             movePiece(temp);
         }
         drag = false;
-    } 
+    }
 });
 
 document.addEventListener('mousedown', e => {
@@ -494,7 +494,7 @@ document.addEventListener('mousedown', e => {
         deactivate();
     }
 });
-  
+
 document.addEventListener('mousemove', e => {
     if (down && active != undefined && getSquare(e) == active) {
         drag = redraw = true;
@@ -510,7 +510,7 @@ var load, rehighlight, redraw, ac, ar, pieceCanvasImg;
 load = rehighlight = redraw = true;
 
 // Draw board
-bctx.font = `${s/6}px sans-serif`;
+bctx.font = `${s / 6}px sans-serif`;
 var [light, dark] = ["#B9B9B9", "#3D3D3D"];
 var squareColor, textColor;
 for (var c = 0; c < 8; c++) {
@@ -524,7 +524,7 @@ for (var c = 0; c < 8; c++) {
 
         // Draw filled tile
         bctx.beginPath();
-        bctx.rect(c*s, r*s, s, s);
+        bctx.rect(c * s, r * s, s, s);
         bctx.fillStyle = squareColor;
         bctx.fill();
         bctx.closePath();
@@ -532,10 +532,10 @@ for (var c = 0; c < 8; c++) {
         // Draw column and row letters and digits
         bctx.strokeStyle = textColor;
         if (r == 7) {
-            bctx.strokeText(cols[board[c][r].col].toUpperCase(), c*s + s - s/6, r*s + 86);
+            bctx.strokeText(cols[board[c][r].col].toUpperCase(), c * s + s - s / 6, r * s + 86);
         }
         if (c == 0) {
-            bctx.strokeText(rows[board[c][r].row], c*s + 4, r*s + s/6);
+            bctx.strokeText(rows[board[c][r].row], c * s + 4, r * s + s / 6);
         }
     }
 }
@@ -543,17 +543,17 @@ for (var c = 0; c < 8; c++) {
 // Draw pieces
 for (var c = 0; c < 8; c++) {
     for (var r = 0; r < 8; r++) {
-     //   drawPiece(c, r);
+        // drawPiece(c, r);
     }
 }
 
 function highlightSquare(c, r, glow, color) {
     var fade, alpha;
     alpha = 0.70;
-    for (var i = 1; i < s/2; i++) { 
+    for (var i = 1; i < s / 2; i++) {
         fade = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
         hctx.beginPath();
-        hctx.rect(c*s+i, r*s+i, s-i*2, s-i*2);
+        hctx.rect(c * s + i, r * s + i, s - i * 2, s - i * 2);
         hctx.strokeStyle = fade;
         hctx.stroke();
         hctx.closePath();
@@ -563,20 +563,20 @@ function highlightSquare(c, r, glow, color) {
 
 function drawPiece(c, r) {
     if (board[c][r].piece == piece.BLANK) return;
-    
+
     var img = new Image(s, s);
     img.src = `graphics/${board[c][r].team.value}${board[c][r].piece.value}.svg`
 
     var x, y;
     if (drag && board[c][r] == active) {
-        x = pos[0] - s/2;
-        y = pos[1] - s/2;
+        x = pos[0] - s / 2;
+        y = pos[1] - s / 2;
     } else {
-        x = c*s;
-        y = r*s;
+        x = c * s;
+        y = r * s;
     }
 
-    img.onload = function() { 
+    img.onload = function () {
         pctx.drawImage(img, x, y, s, s);
     };
 }
