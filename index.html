@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Elegant Chess</title>
+    <title>Chess</title>
     <link href="css/style.css" rel="stylesheet" type="text/css">
     <link rel="icon" type="image/svg" href="graphics/wK.svg">
 </head>
+
 <body>
+    <footer>
+        <i><small>Kaden Empey</small></i><br>
+        <a href="https://github.com/kekag/vi-chess"><i><small>github repo</small></i></a>
+    </footer>
 
-<footer>
-<i><small>Kaden Empey</small></i><br>
-<a href="https://github.com/kekag/Web-Chess"><i><small>github repo</small></i></a>
-</footer>
+    <div id="padder">
+        <canvas id="board" width="720" height="720"></canvas>
+        <canvas id="highlight" width="720" height="720"></canvas>
+        <canvas id="piece" width="720" height="720"></canvas>
+    </div>
 
-<div id="padder">
-<canvas id="board" width="720" height="720"></canvas>
-<canvas id="highlight" width="720" height="720"></canvas>
-<canvas id="piece" width="720" height="720"></canvas>
-</div>
-
-<script src="js/script.js"></script>
-
+    <script src="js/script.js"></script>
 </body>
 </html>

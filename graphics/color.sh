@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# script to change chess piece colors
+
 if [[ $# -lt 2 ]]; then # defaults
 	WHITE="#EDEDED"
 	BLACK="#0F0F0F"
